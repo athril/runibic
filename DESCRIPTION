@@ -1,0 +1,18 @@
+Package: runibic
+Type: Package
+Title: Parallel row-based biclustering algorithm for analysis of gene
+        expression data in R
+Version: 0.0.0.9000
+Author: Patryk Orzechowski
+Maintainer: Patryk Orzechowski <patryk.orzechowski@gmail.com>
+Description: This package implements a parallel version of UbiBic algorithm introduced by Zhenjia Wang et al. for analysis of gene expression data.
+Depends: R (>= 3.4.0)
+Imports: Rcpp (>= 0.12.12), methods, Biobase, biclust
+LinkingTo: Rcpp
+biocViews: Microarray, Clustering
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1.9000
+NeedsCompilation: yes
+Packaged: 2017-09-25 22:47:02 UTC; patrick
