@@ -2,19 +2,26 @@
 Unibic Biclustering algorithm for R
 
 
-# Compilation
+# Development
+
+In order to be able to compile the package you need to prepare flags for the compiler:
+```
+$ export PKG_CXXFLAGS='`Rscript -e "Rcpp:::CxxFlags()"` -std=c++11 -fopenmp'
+```
 
 After each modification in .cpp file, the package needs to be recompiled:
-```R
+```
+$ make
+$ R
 > library(Rcpp)
 > Rcpp::compileAttributes()
 ```
 
-After recompiling the package, in order to build the package, type the following command
-```
-$ export PKG_CXXFLAGS='`Rscript -e "Rcpp:::CxxFlags()"` -std=c++11 -fopenmp'
-$ make
+# Compiling
 
+In order to compile runibic, type:
+```
+make
 ```
 
 # Usage

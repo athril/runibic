@@ -7,7 +7,7 @@ Author: Patryk Orzechowski
 Maintainer: Patryk Orzechowski <patryk.orzechowski@gmail.com>
 Description: This package implements a parallel version of UbiBic algorithm introduced by Zhenjia Wang et al. for analysis of gene expression data.
 Depends: R (>= 3.4.0)
-Imports: Rcpp (>= 0.12.12), methods, Biobase, biclust
+Imports: Rcpp (>= 0.12.12), methods, Biobase, biclust, testthat
 LinkingTo: Rcpp
 biocViews: Microarray, Clustering
 License: MIT

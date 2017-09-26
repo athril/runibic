@@ -20,7 +20,7 @@ all:build install
 
 tarball: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 $(PKG_NAME)_$(PKG_VERSION).tar.gz: $(PKG_FILES)
-	R CMD build ../$(PKG_NAME)
+	R CMD build .
 
 check: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD check $(PKG_NAME)_$(PKG_VERSION).tar.gz
@@ -32,12 +32,12 @@ install: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD INSTALL $(PKG_NAME)_$(PKG_VERSION).tar.gz
 
 NAMESPACE: $(R_FILES)
-	Rscript -e "library(roxygen2);roxygenize('../$(PKG_NAME)')"
+	Rscript -e "library(roxygen2);roxygenize('.')"
 
 clean:
 	-rm -f $(PKG_NAME)_*.tar.gz
 	-rm -rf $(PKG_NAME).Rcheck
-	-rm -rf  man/*
+	-rm -rf  man
 	-rm -rf  NAMESPACE
 	-rm -f src/*.o
 	-rm -f src/*.so
