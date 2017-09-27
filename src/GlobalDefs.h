@@ -1,13 +1,22 @@
 #ifndef GLOBALDEFS_H
 #define GLOBALDEFS_H
+
 #include <vector>
 
 // Default parameters for program
 /* TODO: Add program options init*/
 const int gSchBlock = 200; // TODO: check full name of this option;
 const bool gIsTFname = false; //TODO: check full name and usage of this option;
-int gTFindex = -1; // Index EOF?
-bool gIsList = false; //TODO: check full name and usage of this option;
+const int gTFindex = -1; // Index EOF?
+const bool gIsList = false; //TODO: check full name and usage of this option;
+const int gColWidth = 4; // TODO: check usage of this option
+const double gTolerance = 0.85;// TODO: check usage of this option
+const int gDivided = 15;// TODO: check usage of this option
+const int gDataMode = 0;// TODO: check usage of this option
+const int gQuantile = 0.15;// TODO: check usage of this option
+const bool gIsCond = false;// TODO: check usage of this option
+const bool gIsArea = false; // TODO: check usage of this option
+const bool gIsPValue = false;
 /* biclustering block */
 typedef struct BicBlock
 {
@@ -21,5 +30,12 @@ typedef struct BicBlock
 	double significance;
 	long double pvalue;
 } BicBlock;
+
+bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags);
+int getGenesFullLCS(const short *s1, const short *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0);
+void TrackBack(short** pc,short** pb,int nrow,int ncolumn);
+short* getRowData(int index);
+
 
 #endif

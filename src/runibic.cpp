@@ -12,8 +12,6 @@
 using namespace std;
 using namespace Rcpp;
 
-bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
-
 //' Computing the indexes of j-th smallest values of each row
 //'
 //' This function sorts separately each row of a numeric matrix and returns a matrix
@@ -126,7 +124,7 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
   BicBlock** arrBlocks = new BicBlock*[gSchBlock];
   for(auto ind =0; ind<gSchBlock; ind++)
     arrBlocks[ind] = NULL;
-  BicBlock *b; // bicluster candidate
+  BicBlock *currBlock; // bicluster candidate
   
 	vector<int> *vecGenes, *vecScores, *vecBicGenes, *vecAllInCluster; // helpful vectors/stacks
   vecGenes = new vector<int>();
@@ -175,7 +173,39 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
 				flag = FALSE;*/
     }
     
-		if (!flag) continue;
+    if (!flag) continue;
+    //Init Current block
+    currBlock = new BicBlock();
+    currBlock->score = min(2, (int)scores(ind));
+    currBlock->pvalue = 1;
+    //Init vectors/stack for genes and scores
+    vecGenes->push_back(geneOne(ind));
+    vecGenes->push_back(geneTwo(ind));
+
+    vecScores->push_back(1);
+    vecScores->push_back(currBlock->score);
+
+    /* branch-and-cut condition for seed expansion */
+		int candThreshold = floor(gColWidth * gTolerance);
+    if (candThreshold < 2) 
+      candThreshold = 2;
+    /* maintain a candidate list to avoid looping through all rows */		
+    for (auto j = 0; j < rowNumber; j++) 
+      candidates[j] = TRUE;
+    candidates[(int)geneOne(ind)] = candidates[(int)geneTwo(ind)] = FALSE;
+    components = 2;
+
+    /* expansion step, generate a bicluster without noise */
+		block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, vecGenes, vecScores, candidates, candThreshold, &components, vecAllInCluster, pvalues, rowNumber, colNumber, lcsLength, lcsTags);
+		/* track back to find the genes by which we get the best score*/
+		for(auto k = 0; k < components; k++)
+		{
+			if (gIsPValue)
+				if ((pvalues[k] == currBlock->pvalue) &&(k >= 2) &&(vecScores->at(k)!=vecScores->at(k+1))) break;
+			if ((vecScores->at(k) == currBlock->score)&&(vecScores->at(k+1)!= currBlock->score)) break;
+		}
+
+    delete currBlock;
   }
   
   //Memory clearing
@@ -197,50 +227,6 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
   delete[] lcsTags; 
   return 0;
 }
-bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum)
-{
-  int profiles[rowNum];
-	int b1,b2,b3; // indexes for searching of first 
-  b1 = b2 = -1;
-
-  std::fill(profiles, profiles+rowNum,0);	
-  
-  for (auto ind = 0; ind < block_id; ind++)
-  {
-    auto result1 = find(vecBlk[ind]->genes->begin(), vecBlk[ind]->genes->end(), geneOne);
-    auto result2 = find(vecBlk[ind]->genes->begin(), vecBlk[ind]->genes->end(), geneTwo);
-    if ( result1 != vecBlk[ind]->genes->end()  && result2 != vecBlk[ind]->genes->end() ) 
-      return FALSE;
-    if (result1 != vecBlk[ind]->genes->end() && b1 == -1)
-    {
-      b1 = ind;
-    }
-    if(result2 != vecBlk[ind]->genes->end() && b2 == -1)
-    {
-      b2 = ind;
-    }
-  }
-
-	if ( (b1 == -1)||(b2 == -1) ) 
-    return TRUE;
-	else
-	{
-		for (auto i = 0; i < vecBlk[b1]->block_rows; i++)
-			profiles[vecBlk[b1]->genes->at(i)]++;
-		for (auto i = 0; i < vecBlk[b2]->block_rows; i++)
-			profiles[vecBlk[b2]->genes->at(i)]++;
-		for (auto i = 0; i < rowNum; i++)
- 			if (profiles[i] > 1) 
-				return FALSE;
-		b3 = max(vecBlk[b1]->block_cols, vecBlk[b2]->block_cols);
-		if ( score < b3) 
-			return FALSE;
-		else 
-			return TRUE;
-	}
-  return FALSE;
-}
-
 // [[Rcpp::plugins(cpp11)]]
 
 // Enable OpenMP (exclude macOS)
