@@ -19,19 +19,21 @@ const bool gIsArea = false; // TODO: check usage of this option
 const bool gIsPValue = false;
 const int gRptBlock = 100; // blocks to output
 const int gFilter = 1;
+
+
 /* biclustering block */
-typedef struct BicBlock
-{
-	std::vector<int> genes;
-	std::vector<int> conds;
-	int score;
-	int block_rows;
-	int block_cols;
-	int block_rows_pre;
-	int cond_low_bound;
-	double significance;
-	long double pvalue;
+typedef struct BicBlock {
+  std::vector<int> genes;
+  std::vector<int> conds;
+  int score;
+  int block_rows;
+  int block_cols;
+  int block_rows_pre;
+  int cond_low_bound;
+  double significance;
+  long double pvalue;
 } BicBlock;
+
 
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
 void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, std::vector<int> *inputData);

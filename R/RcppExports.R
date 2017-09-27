@@ -46,8 +46,7 @@ calculateLCS <- function(m, n) {
 #' @return a number of found clusters
 #'
 #' @examples
-#' A=matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=3,byrow=TRUE)
-#' cluster(A,c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),3,4)
+#' cluster(matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
 #'
 #' @export
 cluster <- function(discreteInput, scores, geneOne, geneTwo, rowNumber, colNumber) {
