@@ -10,7 +10,7 @@
 
 
 using namespace std;
-
+using namespace Rcpp;
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum)
 {
   int profiles[rowNum];
@@ -54,7 +54,7 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 	}
   return FALSE;
 }
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags)
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, vector<int> *inputData)
 {
 	int cnt = 0, cnt_all=0, pid=0;
 	float cnt_ave=0, row_all = rowNum;
@@ -69,12 +69,13 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   bool *colcand = new bool[colNum];
 	for (auto ind=0; ind< colNum; ind++) 
     colcand[ind] = false;
-  short *g1, *g2;
+  int *g1, *g2;
   t0=genes->at(0);
   t1=genes->at(1);
-  g1 = getRowData(t0);
-  g2 = getRowData(t1);
   
+  g1 = &((*inputData)[t0*colNum]);
+  g2 = &((*inputData)[t1*colNum]);
+  //Rcout << t0 << " " << t1 << " " <<  g1[0] << " " << g2[0] << endl;
   for(auto i=0;i<rowNum;i++)	
   {
     lcsLength[i]=0;
@@ -93,7 +94,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
 	for(auto j=0;j<rowNum;j++)
 	{	
 		if (j==t1 || j==t0) continue;
-		lcsLength[j]= getGenesFullLCS(g1,getRowData(j),lcsTags[j],lcsTags[t1],colNum); 
+		lcsLength[j]= getGenesFullLCS(g1,&(*inputData)[j*colNum],lcsTags[j],lcsTags[t1],colNum); 
   }
 
   while (*components < rowNum)
@@ -167,9 +168,9 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   delete[] arrRows;
   delete[] arrRowsB;
 }
-int getGenesFullLCS(const short *s1, const short *s2,char *lcs_tg,char *lcs_seed, int colNum)
-{
-	vector<int> *maxRecord = new vector<int>(colNum);/*record the max value of matrix*/
+int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  int colNum)
+{	
+    vector<int> maxRecord;/*record the max value of matrix*/
 	int maxvalue,rank,length1,length2;
 	int *temp1,*temp2;
 	short **C,**B;
@@ -285,26 +286,28 @@ int getGenesFullLCS(const short *s1, const short *s2,char *lcs_tg,char *lcs_seed
   for (auto j=1;j<length2+1;j++)
 	{
 		if (C[length1][j] == maxvalue)
-      maxRecord->push_back(maxvalue);
+      maxRecord.push_back(maxvalue);
   }
   /*find all the columns of all LCSs*/
-	for (auto i=maxRecord->at(maxRecord->size()-1);i>=0;i--)
-	{
-		TrackBack(C,B, length1+1,maxRecord->at(i)+1);break;
-	}
-	for (auto i=1;i<length1+1;i++)
-	{
-		for (auto j=1;j<length2+1;j++)
-		{
-			if (C[i][j] == -1 && B[i][j]==1)
-			{
-				/*printf("lcs_tg:%d,%d\n",temp1[i-1],lcs_tg[temp1[i-1]-1]);*/
-			  if(lcs_tg!=NULL)	lcs_tg[temp1[i-1]-1] = 1;
-			}
-		}
-	}	
+    if(maxRecord.size() > 0)
+    {
+        for (auto i=maxRecord[maxRecord.size()-1];i>=0;i--)
+        {
+            TrackBack(C,B, length1+1,maxRecord[i]+1);break;
+        }
+        for (auto i=1;i<length1+1;i++)
+        {
+            for (auto j=1;j<length2+1;j++)
+            {
+                if (C[i][j] == -1 && B[i][j]==1)
+                {
+                    /*printf("lcs_tg:%d,%d\n",temp1[i-1],lcs_tg[temp1[i-1]-1]);*/
+                  if(lcs_tg!=NULL)	lcs_tg[temp1[i-1]-1] = 1;
+                }
+            }
+        }	
+    }
 	return maxvalue;
-  delete maxRecord;
   delete[] temp1;
   delete[] temp2;
 	for(auto i=0;i<length1+1;i++)

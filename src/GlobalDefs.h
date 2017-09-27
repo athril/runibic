@@ -34,8 +34,8 @@ typedef struct BicBlock
 } BicBlock;
 
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags);
-int getGenesFullLCS(const short *s1, const short *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0);
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, std::vector<int> *inputData);
+int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0);
 void TrackBack(short** pc,short** pb,int nrow,int ncolumn);
 short* getRowData(int index);
 int blockComp(const void *a, const void *b);

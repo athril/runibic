@@ -112,15 +112,17 @@ Rcpp::NumericMatrix calculateLCS(Rcpp::NumericVector m, Rcpp::NumericVector n) {
 //' @return a number of found clusters
 //'
 //' @examples
-//' cluster(c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),3,4)
+//' A=matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+//' cluster(A,c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
 //'
 //' @export
 // [[Rcpp::export]]
-int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::NumericVector geneTwo, int rowNumber, int colNumber)
+int cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber)
 {
   int block_id = 0;
   int cnt = 0;
-  
+  vector<int> discreteInputData = as<vector<int> >(discreteInput);
+
   BicBlock** arrBlocks = new BicBlock*[gSchBlock];
   for(auto ind =0; ind<gSchBlock; ind++)
     arrBlocks[ind] = NULL;
@@ -163,7 +165,8 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
 		}
 		else   
 		{
-			flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, block_id, rowNumber);
+      flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, block_id, rowNumber);
+      Rcout << scores(ind) << " " << geneOne(ind) << " " << geneTwo(ind) << endl;
 			if (gIsTFname && (geneOne(ind) !=  gTFindex) && (geneTwo(ind)!= gTFindex))
       flag = FALSE;
 			/*if ((po->IS_list)&&(!sublist[e->gene_one] || !sublist[e->gene_two])) TODO: Check sublist usage in file reading
@@ -193,7 +196,7 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
     components = 2;
 
     /* expansion step, generate a bicluster without noise */
-		block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, &vecGenes, &vecScores, candidates, candThreshold, &components, &vecAllInCluster, pvalues, rowNumber, colNumber, lcsLength, lcsTags);
+		block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, &vecGenes, &vecScores, candidates, candThreshold, &components, &vecAllInCluster, pvalues, rowNumber, colNumber, lcsLength, lcsTags, &discreteInputData);
     /* track back to find the genes by which we get the best score*/
     int k=0;
 		for(k = 0; k < components; k++)
@@ -233,9 +236,10 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
       colsStat[i] = 0;
       temptag[i] = 0;
     }
+    Rcout << components << "Comp" << endl;
     for(auto i=1;i<components;i++)
     {
-      getGenesFullLCS(getRowData(vecGenes[0]), getRowData(vecGenes[i]),temptag);
+      getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber],temptag);
       for(auto j=0;j<colNumber;j++)
       {
         if(temptag[j]!=0)
@@ -315,7 +319,7 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
       int commonCnt=0;
       for (auto i=0;i<colNumber;i++)
       {
-        if (getRowData(vecGenes[0])[i] * (getRowData(ki)[i]) != 0)
+        if (discreteInputData[vecGenes[0]*colNumber+i] * (discreteInputData[ki*colNumber+i]) != 0)
           commonCnt++;
       }
       if(commonCnt< floor(cnt * gTolerance))
@@ -323,7 +327,7 @@ int cluster(Rcpp::NumericVector scores, Rcpp::NumericVector geneOne, Rcpp::Numer
         candidates[ki] = FALSE;
         continue;
       }
-      getGenesFullLCS(getRowData(vecGenes[0]),getRowData(ki),reveTag,lcsTags[vecGenes[1]]);
+      getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber],&discreteInputData[ki*colNumber],reveTag,lcsTags[vecGenes[1]]);
       m_ct = 0;
       for (auto i=0; i< colNumber; i++)
       {	
