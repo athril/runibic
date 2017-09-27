@@ -38,6 +38,8 @@ calculateLCS <- function(m, n) {
 #' Calculating biclusters from sorted list of LCS scores
 #'
 #' TODO: Make better parameters
+#'
+#' @param discreteInput an integer matrix
 #' @param scores a numeric vector
 #' @param geneOne a numeric vector
 #' @param geneTwo a numeric vector
