@@ -35,3 +35,21 @@ calculateLCS <- function(m, n) {
     .Call('_runibic_calculateLCS', PACKAGE = 'runibic', m, n)
 }
 
+#' Calculating biclusters from sorted list of LCS scores
+#'
+#' TODO: Make better parameters
+#' @param scores a numeric vector
+#' @param geneOne a numeric vector
+#' @param geneTwo a numeric vector
+#' @param rowNumber a int with number of rows
+#' @param colNumber a int with number of columns
+#' @return a number of found clusters
+#'
+#' @examples
+#' cluster(c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3))
+#'
+#' @export
+cluster <- function(scores, geneOne, geneTwo, rowNumber, colNumber) {
+    .Call('_runibic_cluster', PACKAGE = 'runibic', scores, geneOne, geneTwo, rowNumber, colNumber)
+}
+
