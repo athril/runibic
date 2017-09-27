@@ -21,15 +21,15 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
   
   for (auto ind = 0; ind < block_id; ind++)
   {
-    auto result1 = find(vecBlk[ind]->genes->begin(), vecBlk[ind]->genes->end(), geneOne);
-    auto result2 = find(vecBlk[ind]->genes->begin(), vecBlk[ind]->genes->end(), geneTwo);
-    if ( result1 != vecBlk[ind]->genes->end()  && result2 != vecBlk[ind]->genes->end() ) 
+    auto result1 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneOne);
+    auto result2 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneTwo);
+    if ( result1 != vecBlk[ind]->genes.end()  && result2 != vecBlk[ind]->genes.end() ) 
       return FALSE;
-    if (result1 != vecBlk[ind]->genes->end() && b1 == -1)
+    if (result1 != vecBlk[ind]->genes.end() && b1 == -1)
     {
       b1 = ind;
     }
-    if(result2 != vecBlk[ind]->genes->end() && b2 == -1)
+    if(result2 != vecBlk[ind]->genes.end() && b2 == -1)
     {
       b2 = ind;
     }
@@ -40,9 +40,9 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 	else
 	{
 		for (auto i = 0; i < vecBlk[b1]->block_rows; i++)
-			profiles[vecBlk[b1]->genes->at(i)]++;
+			profiles[vecBlk[b1]->genes.at(i)]++;
 		for (auto i = 0; i < vecBlk[b2]->block_rows; i++)
-			profiles[vecBlk[b2]->genes->at(i)]++;
+			profiles[vecBlk[b2]->genes.at(i)]++;
 		for (auto i = 0; i < rowNum; i++)
  			if (profiles[i] > 1) 
 				return FALSE;
@@ -109,12 +109,12 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
 		for (auto i=0; i< rowNum; i++)
 		{
 			if (!candidates[i]) continue;
-      //if (gIsList && !sublist[i]) continue;// TODO Check sublist
-      cnt = 0;
-      for (auto i=0; i< colNum; i++)
-      {	if (colcand[i] && lcsTags[i]!=0) 
-          cnt++;
-      }
+            //if (gIsList && !sublist[i]) continue;// TODO Check sublist
+            cnt = 0;
+            for (auto i=0; i< colNum; i++)
+            {	if (colcand[i] && lcsTags[i]!=0) 
+                cnt++;
+            }
 	
 			cnt_all += cnt;
 			if (cnt < cand_threshold) 
@@ -343,4 +343,9 @@ void TrackBack(short** pc,short** pb,int nrow,int ncolumn)
 short* getRowData(int index)
 {
   return NULL;
+}
+int blockComp(const void *a, const void *b)
+/* compare function for qsort, descending by score */
+{
+	return ((*(BicBlock **)b)->score - (*(BicBlock **)a)->score);
 }

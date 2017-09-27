@@ -5,7 +5,7 @@
 
 // Default parameters for program
 /* TODO: Add program options init*/
-const int gSchBlock = 200; // TODO: check full name of this option;
+const int gSchBlock = 200; // TODO: check full name of this option; Blocks to post process
 const bool gIsTFname = false; //TODO: check full name and usage of this option;
 const int gTFindex = -1; // Index EOF?
 const bool gIsList = false; //TODO: check full name and usage of this option;
@@ -17,11 +17,13 @@ const int gQuantile = 0.15;// TODO: check usage of this option
 const bool gIsCond = false;// TODO: check usage of this option
 const bool gIsArea = false; // TODO: check usage of this option
 const bool gIsPValue = false;
+const int gRptBlock = 100; // blocks to output
+const int gFilter = 1;
 /* biclustering block */
 typedef struct BicBlock
 {
-	std::vector<int> *genes;
-	std::vector<int> *conds;
+	std::vector<int> genes;
+	std::vector<int> conds;
 	int score;
 	int block_rows;
 	int block_cols;
@@ -36,6 +38,6 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
 int getGenesFullLCS(const short *s1, const short *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0);
 void TrackBack(short** pc,short** pb,int nrow,int ncolumn);
 short* getRowData(int index);
-
+int blockComp(const void *a, const void *b);
 
 #endif
