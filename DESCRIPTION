@@ -9,10 +9,10 @@ Description: This package implements a parallel version of UbiBic algorithm intr
 Depends: R (>= 3.4.0)
 Imports: Rcpp (>= 0.12.12), methods, Biobase, biclust, testthat
 LinkingTo: Rcpp
+SystemRequirements: GNU make, C++11
 biocViews: Microarray, Clustering
 License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1.9000
 NeedsCompilation: yes
-Packaged: 2017-09-25 22:47:02 UTC; patrick
