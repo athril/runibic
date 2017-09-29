@@ -5,6 +5,17 @@
 
 using namespace Rcpp;
 
+// discretize
+Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x);
+RcppExport SEXP _runibic_discretize(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(discretize(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // unisort
 Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x);
 RcppExport SEXP _runibic_unisort(SEXP xSEXP) {
@@ -46,6 +57,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_runibic_discretize", (DL_FUNC) &_runibic_discretize, 1},
     {"_runibic_unisort", (DL_FUNC) &_runibic_unisort, 1},
     {"_runibic_calculateLCS", (DL_FUNC) &_runibic_calculateLCS, 2},
     {"_runibic_cluster", (DL_FUNC) &_runibic_cluster, 6},

@@ -35,6 +35,9 @@ install: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 NAMESPACE: $(R_FILES)
 	Rscript -e "library(roxygen2);roxygenize('.')"
 
+biocheck: 
+	R CMD BiocCheck .
+
 clean:
 	-rm -f $(PKG_NAME)_*.tar.gz
 	-rm -rf $(PKG_NAME).Rcheck

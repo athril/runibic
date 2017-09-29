@@ -12,10 +12,36 @@
 using namespace std;
 using namespace Rcpp;
 
+// [[Rcpp::plugins(cpp11)]]
+// Enable OpenMP (exclude macOS)
+// [[Rcpp::plugins(openmp)]]
+
+
+
 int gTFindex; // Index EOF?
 int gColWidth; // TODO: check usage of this option
 int gDivided;// TODO: check usage of this option
 List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
+
+
+
+
+//' Discretize an input matrix
+//'
+//' This function discretizes the input matrix
+//' TODO: Implement functionality
+//'
+//' @param x a numeric matrix
+//' @return a discretized matrix containing integers only
+//'
+// [[Rcpp::export]]
+Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
+  IntegerMatrix y(x.nrow(),x.ncol());
+  return y;
+}
+
+
+
 //' Computing the indexes of j-th smallest values of each row
 //'
 //' This function sorts separately each row of a numeric matrix and returns a matrix
@@ -25,8 +51,7 @@ List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int
 //' @return a numeric matrix with indexes indicating positions of j-th smallest element in each row
 //'
 //' @examples
-//' A=matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE)
-//' unisort(A)
+//' unisort(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 //'
 //' @export
 // [[Rcpp::export]]
@@ -473,10 +498,7 @@ List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int
            Named("Number") = numBlocks,
            Named("info") = List::create());
 }
-// [[Rcpp::plugins(cpp11)]]
 
-// Enable OpenMP (exclude macOS)
-// [[Rcpp::plugins(openmp)]]
 
 
 /*
