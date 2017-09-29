@@ -23,8 +23,10 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
   for (auto ind = 0; ind < block_id; ind++) {
     auto result1 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneOne);
     auto result2 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneTwo);
-    if ( result1 != vecBlk[ind]->genes.end()  && result2 != vecBlk[ind]->genes.end() ) 
+    if ( result1 != vecBlk[ind]->genes.end()  && result2 != vecBlk[ind]->genes.end() ){
       return FALSE;
+    }
+      
     if (result1 != vecBlk[ind]->genes.end() && b1 == -1) {
       b1 = ind;
     }
@@ -32,7 +34,6 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
       b2 = ind;
     }
   }
-
   if ( (b1 == -1)||(b2 == -1) )
     return TRUE;
   else {
@@ -55,8 +56,8 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 
 
 void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, vector<int> *inputData) {
-  int cnt = 0, cnt_all=0, pid=0;
-  float cnt_ave=0, row_all = rowNum;
+  int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
+  float cnt_ave=0;
   long double pvalue;
   int max_cnt, max_i;
   int t0,t1;
@@ -74,18 +75,18 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
 
   g1 = &((*inputData)[t0*colNum]);
   g2 = &((*inputData)[t1*colNum]);
-  //Rcout << t0 << " " << t1 << " " <<  g1[0] << " " << g2[0] << endl;
   for(auto i=0;i<rowNum;i++) {
     lcsLength[i]=0;
     for(auto j=0;j<colNum;j++)
-    lcsTags[i][j]=0;
+      lcsTags[i][j]=0;
   }
   /*************************calculate the lcs*********************************/
 
   lcsLength[t1]=getGenesFullLCS(g1,g2,lcsTags[t1],NULL,colNum); 
   for(auto i=0;i<colNum;i++) {
-    if(lcsTags[t1][i]!=0)
+    if(lcsTags[t1][i]!=0) {
       colcand[i]=TRUE;
+    }
   }
 
   for(auto j=0;j<rowNum;j++) {
@@ -104,15 +105,17 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
     /*add a function of controling the bicluster by pvalue*/
     /******************************************************/
     for (auto i=0; i< rowNum; i++) {
-      if (!candidates[i]) 
+      if (!candidates[i]) {
         continue;
+      }
       //if (gIsList && !sublist[i]) continue;// TODO Check sublist
       cnt = 0;
-      for (auto i=0; i< colNum; i++) {
-        if (colcand[i] && lcsTags[i]!=0)
+      for (auto j=0; j< colNum; j++) {
+        if (colcand[j] && lcsTags[i][j]!=0){
           cnt++;
+        }
+          
       }
-
       cnt_all += cnt;
       if (cnt < cand_threshold)
         candidates[i] = FALSE;
@@ -123,7 +126,6 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
     }
     cnt_ave = cnt_all/row_all;
 
-    int i =0;
     long double one = 1;
     long double poisson=one/exp(cnt_ave);
     for (auto i=0;i<max_cnt+300;i++) {
@@ -136,8 +138,9 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
       if (max_cnt < gColWidth || max_i < 0|| max_cnt < block->cond_low_bound) break;
     }
     else {
-      if (max_cnt < gColWidth || max_i < 0) 
-        break;
+      if (max_cnt < gColWidth || max_i < 0){
+        break;        
+      }
     }
     int tempScore = 0;
     if (gIsArea)
@@ -153,7 +156,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
     pvalues[pid++] = pvalue;
 
     for (auto i=0; i< colNum; i++)
-      if (colcand[i] &&(lcsTags[max_i]==0))
+      if (colcand[i] &&(lcsTags[max_i][i]==0))
         colcand[i] = FALSE;
     candidates[max_i] = FALSE;
   }
@@ -161,7 +164,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   delete[] arrRows;
   delete[] arrRowsB;
 }
-int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  int colNum) {
+int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  int colNum,bool reverse) {
   vector<int> maxRecord;/*record the max value of matrix*/
   int maxvalue,rank,length1,length2;
   int *temp1,*temp2;
@@ -186,8 +189,15 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
           if(s1[j] == i)
             temp1[length1++]=j+1;
           /*printf("[j:%d,s2[j]:%d] ",j,s2[j]);*/
-          if(s2[j] == i)
+          if(reverse){
+            if(s2[j] == rank-i+1)
+						  temp2[length2++]=j+1;
+          }
+          else{
+            if(s2[j] == i)
             temp2[length2++]=j+1;
+          }
+          
         }
       }
       else {
@@ -221,7 +231,6 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
       }
     }
   }
-
   /*create matrix for lcs*/
   C = new short*[length1+1];
   B = new short*[length1+1];
@@ -229,7 +238,7 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
     C[i] = new short[length2+1];
     B[i] = new short[length2+1];
   }
-
+  
   /************initial the edge***************/
   for(auto i=0; i<length1+1; i++) {
     C[i][0] = 0;
@@ -242,16 +251,16 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
   /************DP*****************************/
   for(auto i=1; i<length1+1; i++) {
     for(auto j=1; j<length2+1; j++) {
-      if(s1[i-1] == s2[j-1]) {
+      if(temp1[i-1] == temp2[j-1]) {
         C[i][j] = C[i-1][j-1] + 1;
         B[i][j] = 1;
       }
       else if(C[i-1][j] >= C[i][j-1]) {
         C[i][j] = C[i-1][j];
         B[i][j] = 2;
-     }
-         else {
-            C[i][j] = C[i][j-1];
+      }
+      else {
+        C[i][j] = C[i][j-1];
         B[i][j] = 3;
       }
     }
@@ -259,27 +268,26 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
   maxvalue = C[length1][length2];
   for (auto j=1;j<length2+1;j++) {
     if (C[length1][j] == maxvalue)
-      maxRecord.push_back(maxvalue);
+      maxRecord.push_back(j);
   }
   /*find all the columns of all LCSs*/
   if(maxRecord.size() > 0) {
-    for (auto i=maxRecord[maxRecord.size()-1];i>=0;i--) {
-      TrackBack(C,B, length1+1,maxRecord[i]+1);
+    for (auto i=maxRecord.size()-1;i>=0;i--) {
+      TrackBack(C,B, length1+1,maxRecord[i]+1);      
       break;
     }
-    for (auto i=1;i<length1+1;i++) {
-      for (auto j=1;j<length2+1;j++) {
-        if (C[i][j] == -1 && B[i][j]==1) {
-          /*printf("lcs_tg:%d,%d\n",temp1[i-1],lcs_tg[temp1[i-1]-1]);*/
-          if(lcs_tg!=NULL)
-            lcs_tg[temp1[i-1]-1] = 1;
-        }
-      } //end for j
-    } // end for i
+    if(lcs_tg!=NULL)
+    {
+      for (auto i=1;i<length1+1;i++) {
+        for (auto j=1;j<length2+1;j++) {
+          if (C[i][j] == -1 && B[i][j]==1) {
+              lcs_tg[temp1[i-1]-1] = 1;
+          }
+        } //end for j
+      } // end for i  
+    }
   }
-
-
-  return maxvalue;
+  
   delete[] temp1;
   delete[] temp2;
   for(auto i=0;i<length1+1;i++) {
@@ -301,6 +309,7 @@ void TrackBack(short** pc,short** pb,int nrow,int ncolumn) {
     return;
   ntemp = pb[nrow-1][ncolumn-1];
   pc[nrow-1][ncolumn-1] = -1;
+         
   switch(ntemp) {
     case 1:
       TrackBack(pc, pb, nrow-1, ncolumn-1);
@@ -322,7 +331,7 @@ short* getRowData(int index) {
 }
 
 
-int blockComp(const void *a, const void *b) {
+bool blockComp(BicBlock*lhs, BicBlock* rhs) {
 /* compare function for qsort, descending by score */ 
-  return ((*(BicBlock **)b)->score - (*(BicBlock **)a)->score);
+  return lhs->score > rhs->score;
 }

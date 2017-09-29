@@ -29,7 +29,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cluster
-int cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber);
+List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber);
 RcppExport SEXP _runibic_cluster(SEXP discreteInputSEXP, SEXP scoresSEXP, SEXP geneOneSEXP, SEXP geneTwoSEXP, SEXP rowNumberSEXP, SEXP colNumberSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
