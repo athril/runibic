@@ -13,6 +13,11 @@ using namespace std;
 using namespace Rcpp;
 
 
+
+extern int gTFindex; // Index EOF?
+extern int gColWidth; // TODO: check usage of this option
+extern int gDivided;// TODO: check usage of this option
+
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum) {
   int profiles[rowNum];
   int b1,b2,b3; // indexes for searching of first encounter

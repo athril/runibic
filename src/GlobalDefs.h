@@ -7,11 +7,8 @@
 /* TODO: Add program options init*/
 const int gSchBlock = 200; // TODO: check full name of this option; Blocks to post process
 const bool gIsTFname = false; //TODO: check full name and usage of this option;
-const int gTFindex = 99; // Index EOF?
 const bool gIsList = false; //TODO: check full name and usage of this option;
-const int gColWidth = 3+floor(100/30); // TODO: check usage of this option
 const double gTolerance = 0.85;// TODO: check usage of this option
-const int gDivided = 100;// TODO: check usage of this option
 const int gDataMode = 0;// TODO: check usage of this option
 const int gQuantile = 0.5;;// TODO: check usage of this option
 const bool gIsCond = false;// TODO: check usage of this option

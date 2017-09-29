@@ -12,7 +12,9 @@
 using namespace std;
 using namespace Rcpp;
 
-
+int gTFindex; // Index EOF?
+int gColWidth; // TODO: check usage of this option
+int gDivided;// TODO: check usage of this option
 List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
 //' Computing the indexes of j-th smallest values of each row
 //'
@@ -120,6 +122,11 @@ Rcpp::NumericMatrix calculateLCS(Rcpp::NumericVector m, Rcpp::NumericVector n) {
 //' @export
 // [[Rcpp::export]]
 List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
+  
+  gTFindex = rowNumber-1; // Index EOF?
+  gColWidth = max(3+floor(colNumber/30),4.0); // TODO: check usage of this option
+  gDivided = colNumber;// TODO: check usage of this option
+ 
   int block_id = 0;
   int cnt = 0;
   vector<int> discreteInputData = as<vector<int> >(discreteInput);
@@ -455,7 +462,7 @@ List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int
   auto x = LogicalMatrix(nr, numBlocks);
   auto y = LogicalMatrix(numBlocks, nc);
   for (int i = 0; i < numBlocks; i++) {
-    for (auto it = blocks[i]->genes.begin(); it != blocks[i]->genes.begin(); ++it) 
+    for (auto it = blocks[i]->genes.begin(); it != blocks[i]->genes.end(); ++it) 
       x(*it, i) = true;
     for (auto it = blocks[i]->conds.begin(); it != blocks[i]->conds.end(); ++it)   
       y(i, *it) = true;
