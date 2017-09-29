@@ -29,21 +29,54 @@ unisort <- function(x) {
     .Call('_runibic_unisort', PACKAGE = 'runibic', x)
 }
 
-#' Calculating Longest Common Subsequence (LCS) between two numeric vectors
+#' Calculating a matrix of Longest Common Subsequence (LCS) between a pair of numeric vectors
 #'
-#' This function calculates using dynamic programming the Longest Common Subsequence (LCS)
+#' This function calculates the matrix with Longest Common Subsequence (LCS)
 #' between two numeric vectors.
 #'
-#' @param m a numeric vector
-#' @param n a numeric vector
+#' @param x an integer vector
+#' @param y an integer vector
 #' @return a matrix storing Longest Common Subsequence (LCS)
 #'
 #' @examples
-#' calculateLCS(c(1,2,3,4,5),c(1,2,4))
+#' pairwiseLCS(c(1,2,3,4,5),c(1,2,4))
 #'
 #' @export
-calculateLCS <- function(m, n) {
-    .Call('_runibic_calculateLCS', PACKAGE = 'runibic', m, n)
+pairwiseLCS <- function(x, y) {
+    .Call('_runibic_pairwiseLCS', PACKAGE = 'runibic', x, y)
+}
+
+#' Retrieving from a matrix Longest Common Subsequence (LCS) between a pair of numeric vector.
+#'
+#' This function retrieves the Longest Common Subsequence (LCS)
+#' between two numeric vectors by backtracking the matrix obtained with dynamic programming.
+#'
+#' @param c an integer numeric matrix prepared using pairwiseLCS()
+#' @param x an integer vector
+#' @param y an integer vector
+#' @return an integer with the length of Longest Common Subsequence (LCS)
+#'
+#' @examples
+#' backtrackLCS( pairwiseLCS(c(1,2,3,4,5),c(1,2,4)), c(1,2,3,4,5),c(1,2,4))
+#'
+#' @export
+backtrackLCS <- function(c, x, y) {
+    .Call('_runibic_backtrackLCS', PACKAGE = 'runibic', c, x, y)
+}
+
+#' This function calculates all pairwise LCSes within the array.
+#'
+#' This function computes unique pairwise Longest Common Subsequences within the matrix.
+#'
+#' @param discreteInput is a matrix
+#' @return a list with informa
+#'
+#' @examples
+#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+#'
+#' @export
+calculateLCS <- function(discreteInput) {
+    .Call('_runibic_calculateLCS', PACKAGE = 'runibic', discreteInput)
 }
 
 #' Calculating biclusters from sorted list of LCS scores

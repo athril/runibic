@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <utility>
 #include <iterator>
+#include <functional>
 #include "GlobalDefs.h"
 
 
@@ -15,6 +16,7 @@ using namespace Rcpp;
 // [[Rcpp::plugins(cpp11)]]
 // Enable OpenMP (exclude macOS)
 // [[Rcpp::plugins(openmp)]]
+
 
 
 
@@ -81,53 +83,138 @@ Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x) {
 }
 
 
-//' Calculating Longest Common Subsequence (LCS) between two numeric vectors
+
+//' Calculating a matrix of Longest Common Subsequence (LCS) between a pair of numeric vectors
 //'
-//' This function calculates using dynamic programming the Longest Common Subsequence (LCS)
+//' This function calculates the matrix with Longest Common Subsequence (LCS)
 //' between two numeric vectors.
 //'
-//' @param m a numeric vector
-//' @param n a numeric vector
+//' @param x an integer vector
+//' @param y an integer vector
 //' @return a matrix storing Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' calculateLCS(c(1,2,3,4,5),c(1,2,4))
+//' pairwiseLCS(c(1,2,3,4,5),c(1,2,4))
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix calculateLCS(Rcpp::NumericVector m, Rcpp::NumericVector n) {
-  NumericMatrix pc(m.size(), n.size());
-  NumericMatrix pb(m.size(), n.size());
+Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 
-  for (auto j=0; j<m.size(); j++) {
-    pc(j,0)=0;
-    pb(j,0)=0;
+  IntegerMatrix c(x.size()+1,y.size()+1);
+
+  for (auto i=0; i<x.size(); i++) {
+    c(i,0)=0;
   }
 
-  for (auto j=0; j<n.size(); j++) {
-    pc(0,j)=0;
-    pb(0,j)=0;
+  for (auto j=0; j<y.size(); j++) {
+    c(0,j)=0;
   }
 
-  // TODO: implement parallel LCS
-  for(auto i=1; i<m.size(); i++) {
-    for(auto j=1; j<n.size(); j++) {
-      if(m(i-1) == n(j-1)) {
-        pc(i,j) = pc(i-1,j-1) + 1;
-        pb(i,j) = 1;
-      }
-      else if(pc(i-1,j) >= pc(i,j-1)) {
-        pc(i,j) = pc(i-1,j);
-        pb(i,j) = 2;
+  for(auto i=1; i<x.size()+1; i++) {
+    for(auto j=1; j<y.size()+1; j++) {
+      if(x(i-1) == y(j-1)) {
+        c(i,j) = c(i-1,j-1) + 1;
       }
       else {
-        pc(i,j) = pc(i,j-1);
-        pb(i,j) = 3;
+        c(i,j) = std::max(c(i,j-1),c(i-1,j));
       }
     }
   }
-  return pc;
+  return c;
 }
+
+
+
+
+//' Retrieving from a matrix Longest Common Subsequence (LCS) between a pair of numeric vector.
+//'
+//' This function retrieves the Longest Common Subsequence (LCS)
+//' between two numeric vectors by backtracking the matrix obtained with dynamic programming.
+//'
+//' @param c an integer numeric matrix prepared using pairwiseLCS()
+//' @param x an integer vector
+//' @param y an integer vector
+//' @return an integer with the length of Longest Common Subsequence (LCS)
+//'
+//' @examples
+//' backtrackLCS( pairwiseLCS(c(1,2,3,4,5),c(1,2,4)), c(1,2,3,4,5),c(1,2,4))
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
+  auto index=c(c.nrow()-1,c.ncol()-1);
+  auto i=x.size(), j=y.size();
+  Rcpp::IntegerVector lcs(index);
+
+  while (i > 0 && j > 0) {
+    if (x(i-1) == y(j-1)) {
+      lcs(index-1) = x(i-1);
+      i--; j--; index--;
+    }
+    else if (c(i-1,j) > c(i,j-1))
+      i--;
+    else
+      j--;
+   }
+   // Print the lcs
+   //cout << "LCS of " << X << " and " << Y << " is " << lcs;
+  return lcs;
+}
+
+
+
+//' This function calculates all pairwise LCSes within the array.
+//'
+//' This function computes unique pairwise Longest Common Subsequences within the matrix.
+//'
+//' @param discreteInput is a matrix
+//' @return a list with informa
+//'
+//' @examples
+//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput) {
+  int size=discreteInput.nrow()*(discreteInput.nrow()-1)/2;
+  vector<int> geneA(size);
+  vector<int> geneB(size);
+  vector<int> lcslen(size);
+
+
+// TODO: change into parallel version
+// there should be 1-level for loop across all combinations of pairs of rows
+//  #pragma omp parallel for private(a,b,i,j,res) schedule(dynamic)
+//  for ( auto k=0; k<size; k++ ) {
+//    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
+  int k=0;
+  for (auto i=0; i<discreteInput.nrow(); i++) {
+    for (auto j=i+1; j<discreteInput.nrow(); j++) {
+      IntegerVector a = discreteInput(i,_);
+      IntegerVector b = discreteInput(j,_);
+      geneA[k]=i;
+      geneB[k]=j;
+      IntegerMatrix res=pairwiseLCS(a,b);
+      lcslen[k]=res[res.size()-1,res.size()-1];
+      k++;
+    }
+  }
+
+
+/* TODO: sort according to lcslen. The following sorting doesn't work:
+  std::sort( std::begin(geneA),std::end(geneA), [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
+  std::sort( std::begin(geneB),std::end(geneB), [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
+  std::sort( std::begin(lcslen),std::end(lcslen));//, [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
+  potential workaround: https://stackoverflow.com/questions/37368787/c-sort-one-vector-based-on-another-one
+*/
+  return List::create(
+           Named("a") = geneA,
+           Named("b") = geneB,
+           Named("lcslen") = lcslen);
+}
+
+
+
 
 //' Calculating biclusters from sorted list of LCS scores
 //'
@@ -146,12 +233,11 @@ Rcpp::NumericMatrix calculateLCS(Rcpp::NumericVector m, Rcpp::NumericVector n) {
 //'
 //' @export
 // [[Rcpp::export]]
-List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
-  
+Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
   gTFindex = rowNumber-1; // Index EOF?
   gColWidth = max(3+floor(colNumber/30),4.0); // TODO: check usage of this option
   gDivided = colNumber;// TODO: check usage of this option
- 
+
   int block_id = 0;
   int cnt = 0;
   vector<int> discreteInputData = as<vector<int> >(discreteInput);
