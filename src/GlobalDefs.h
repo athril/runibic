@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <algorithm>
+#include <Rcpp.h>
+
 // Default parameters for program
 /* TODO: Add program options init*/
 const int gSchBlock = 200; // TODO: check full name of this option; Blocks to post process
@@ -10,13 +12,13 @@ const bool gIsTFname = false; //TODO: check full name and usage of this option;
 const bool gIsList = false; //TODO: check full name and usage of this option;
 const double gTolerance = 0.85;// TODO: check usage of this option
 const int gDataMode = 0;// TODO: check usage of this option
-const int gQuantile = 0.5;;// TODO: check usage of this option
+const double gQuantile = 0.5;;// TODO: check usage of this option
 const bool gIsCond = false;// TODO: check usage of this option
 const bool gIsArea = false; // TODO: check usage of this option
 const bool gIsPValue = false;
 const int gRptBlock = 100; // blocks to output
 const double gFilter = 0.25;
-
+const int gShuffle = 0;
 
 /* biclustering block */
 typedef struct BicBlock {
@@ -31,7 +33,7 @@ typedef struct BicBlock {
   long double pvalue;
 } BicBlock;
 
-
+double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam);
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
 void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, std::vector<int> *inputData);
 int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0, bool reverse = false);

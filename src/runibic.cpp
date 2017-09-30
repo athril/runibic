@@ -23,7 +23,7 @@ using namespace Rcpp;
 int gTFindex; // Index EOF?
 int gColWidth; // TODO: check usage of this option
 int gDivided;// TODO: check usage of this option
-List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
+Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
 
 
 
@@ -39,11 +39,63 @@ List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int
 // [[Rcpp::export]]
 Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
   IntegerMatrix y(x.nrow(),x.ncol());
+
+  gDivided = x.ncol();// TODO: check usage of this option
+  
+  if(gQuantile >=0.5){
+    for(auto iRow = 0; iRow < x.nrow(); iRow++){
+      NumericVector rowData = x(iRow,_);
+      sort(rowData.begin(), rowData.end());
+  
+      for(auto iCol = 0; iCol < x.ncol(); iCol++){
+        double dSpace = 1.0 / gDivided;
+        for(auto ind=0; ind < gDivided; ind++){
+          if(x(iRow,iCol) >= calculateQuantile(rowData, x.ncol(), 1.0 - dSpace * (ind+1))){
+            y(iRow,iCol) = ind+1;
+            break;
+          }
+        }
+      }
+    }
+  }
+  else{
+    for(auto iRow = 0; iRow < x.nrow(); iRow++){
+      NumericVector rowData = x(iRow,_);
+      sort(rowData.begin(), rowData.end());
+
+      double partOne = calculateQuantile(rowData,x.ncol(),1-gQuantile);
+      double partTwo = calculateQuantile(rowData,x.ncol(),gQuantile);
+      double partThree = calculateQuantile(rowData, x.ncol(), 0.5);
+      double upperLimit, lowerLimit;
+      
+      if((partOne-partThree) >= (partThree - partTwo)){
+        upperLimit = 2*partThree - partTwo;
+        lowerLimit = partTwo;
+      }
+      else{
+        upperLimit = partOne;
+        lowerLimit = 2*partThree - partOne;
+      }
+      NumericVector biggerPart, lowerPart;
+      biggerPart = rowData[rowData > upperLimit];
+      lowerPart = rowData[rowData < lowerLimit];
+      for(auto iCol = 0; iCol < x.ncol(); iCol++){
+        double dSpace = 1.0 / gDivided;
+        for(auto ind=0; ind < gDivided; ind++){
+          if(lowerPart.size() > 0 && x(iRow,iCol) <= calculateQuantile(lowerPart, lowerPart.size(), dSpace * (ind))){
+            y(iRow,iCol) = -ind-1;
+            break;
+          }
+          if(biggerPart.size() > 0 && x(iRow,iCol) >= calculateQuantile(biggerPart, biggerPart.size(), 1.0 - dSpace * (ind+1))){
+            y(iRow,iCol) = ind+1;
+            break;
+          }
+        }
+      }
+    }
+  }
   return y;
 }
-
-
-
 //' Computing the indexes of j-th smallest values of each row
 //'
 //' This function sorts separately each row of a numeric matrix and returns a matrix
@@ -568,7 +620,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
 
   return outList;
 }
-List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc) {
+Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc) {
 
   auto x = LogicalMatrix(nr, numBlocks);
   auto y = LogicalMatrix(numBlocks, nc);

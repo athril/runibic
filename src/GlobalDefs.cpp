@@ -340,3 +340,14 @@ bool blockComp(BicBlock*lhs, BicBlock* rhs) {
 /* compare function for qsort, descending by score */ 
   return lhs->score > rhs->score;
 }
+
+double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam)
+{
+  double delta = (size-1)*qParam;
+  int i = floor(delta);
+  delta=delta-i;
+  if(i < size - 1)
+    return (1-delta)*vecData(i) + (delta)*vecData(i+1);
+  else 
+    return -1;
+}
