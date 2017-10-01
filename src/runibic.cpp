@@ -13,19 +13,10 @@
 using namespace std;
 using namespace Rcpp;
 
+Params gParameters;
 // [[Rcpp::plugins(cpp11)]]
 // Enable OpenMP (exclude macOS)
 // [[Rcpp::plugins(openmp)]]
-
-
-
-
-int gTFindex; // Index EOF?
-int gColWidth; // TODO: check usage of this option
-int gDivided;// TODO: check usage of this option
-Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
-
-
 
 
 //' Discretize an input matrix
@@ -40,16 +31,17 @@ Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, con
 Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
   IntegerMatrix y(x.nrow(),x.ncol());
 
-  gDivided = x.ncol();// TODO: check usage of this option
+  gParameters.InitOptions(x.nrow(),x.ncol());
+
   
-  if(gQuantile >=0.5){
+  if(gParameters.Quantile >=0.5){
     for(auto iRow = 0; iRow < x.nrow(); iRow++){
       NumericVector rowData = x(iRow,_);
       sort(rowData.begin(), rowData.end());
   
       for(auto iCol = 0; iCol < x.ncol(); iCol++){
-        double dSpace = 1.0 / gDivided;
-        for(auto ind=0; ind < gDivided; ind++){
+        double dSpace = 1.0 / gParameters.Divided;
+        for(auto ind=0; ind < gParameters.Divided; ind++){
           if(x(iRow,iCol) >= calculateQuantile(rowData, x.ncol(), 1.0 - dSpace * (ind+1))){
             y(iRow,iCol) = ind+1;
             break;
@@ -63,8 +55,8 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
       NumericVector rowData = x(iRow,_);
       sort(rowData.begin(), rowData.end());
 
-      double partOne = calculateQuantile(rowData,x.ncol(),1-gQuantile);
-      double partTwo = calculateQuantile(rowData,x.ncol(),gQuantile);
+      double partOne = calculateQuantile(rowData,x.ncol(),1-gParameters.Quantile);
+      double partTwo = calculateQuantile(rowData,x.ncol(),gParameters.Quantile);
       double partThree = calculateQuantile(rowData, x.ncol(), 0.5);
       double upperLimit, lowerLimit;
       
@@ -80,8 +72,8 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
       biggerPart = rowData[rowData > upperLimit];
       lowerPart = rowData[rowData < lowerLimit];
       for(auto iCol = 0; iCol < x.ncol(); iCol++){
-        double dSpace = 1.0 / gDivided;
-        for(auto ind=0; ind < gDivided; ind++){
+        double dSpace = 1.0 / gParameters.Divided;
+        for(auto ind=0; ind < gParameters.Divided; ind++){
           if(lowerPart.size() > 0 && x(iRow,iCol) <= calculateQuantile(lowerPart, lowerPart.size(), dSpace * (ind))){
             y(iRow,iCol) = -ind-1;
             break;
@@ -286,15 +278,15 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput) {
 //' @export
 // [[Rcpp::export]]
 Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
-  gTFindex = rowNumber-1; // Index EOF?
-  gColWidth = max(3+floor(colNumber/30),4.0); // TODO: check usage of this option
-  gDivided = colNumber;// TODO: check usage of this option
+  
+  
+  gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
 
   int block_id = 0;
   int cnt = 0;
   vector<int> discreteInputData = as<vector<int> >(discreteInput);
-  BicBlock** arrBlocks = new BicBlock*[gSchBlock];
-  for(auto ind =0; ind<gSchBlock; ind++)
+  BicBlock** arrBlocks = new BicBlock*[gParameters.SchBlock];
+  for(auto ind =0; ind<gParameters.SchBlock; ind++)
     arrBlocks[ind] = NULL;
   BicBlock *currBlock; // bicluster candidate
 
@@ -325,13 +317,9 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
 
       if ( result1 != vecAllInCluster.end() && result2 != vecAllInCluster.end())
         flag = FALSE;
-      else if (gIsTFname && (geneOne(ind) !=  gTFindex) && (geneTwo(ind)!= gTFindex))
-        flag = FALSE;
     }
     else {
       flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, block_id, rowNumber);
-      if (gIsTFname && (geneOne(ind) !=  gTFindex) && (geneTwo(ind)!= gTFindex))
-        flag = FALSE;
     }
     if (!flag)    {
       continue;
@@ -352,7 +340,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     vecScores.push_back(currBlock->score);
     
     /* branch-and-cut condition for seed expansion */
-    int candThreshold = floor(gColWidth * gTolerance);
+    int candThreshold = floor(gParameters.ColWidth * gParameters.Tolerance);
     if (candThreshold < 2) 
       candThreshold = 2;
     /* maintain a candidate list to avoid looping through all rows */		
@@ -361,12 +349,12 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     candidates[(int)geneOne(ind)] = candidates[(int)geneTwo(ind)] = FALSE;
     components = 2;
     /* expansion step, generate a bicluster without noise */
-    block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, &vecGenes, &vecScores, candidates, candThreshold, &components, &vecAllInCluster, pvalues, rowNumber, colNumber, lcsLength, lcsTags, &discreteInputData);
+    block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, &vecGenes, &vecScores, candidates, candThreshold, &components, &vecAllInCluster, pvalues, &gParameters, lcsLength, lcsTags, &discreteInputData);
     /* track back to find the genes by which we get the best score*/       
     
     int  k=0;
     for(k = 0; k < components; k++) {
-      if (gIsPValue)
+      if (gParameters.IsPValue)
         if ((pvalues[k] == currBlock->pvalue) &&(k >= 2) &&(vecScores[k]!=vecScores[k+1])) 
           break;
       if ((vecScores[k] == currBlock->score)&&(vecScores[k+1]!= currBlock->score)) 
@@ -429,7 +417,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         if (colcand[i] && lcsTags[ki][i]!=0) 
         m_ct++;
       }
-      if (candidates[ki]&& (m_ct >= floor(cnt * gTolerance)-1)) {
+      if (candidates[ki]&& (m_ct >= floor(cnt * gParameters.Tolerance)-1)) {
         int temp;
         for(temp=0;temp<colNumber;temp++) {
           if(colcand[temp]) {
@@ -470,7 +458,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         if (discreteInputData[vecGenes[0]*colNumber+i] * (discreteInputData[ki*colNumber+i]) != 0)
           commonCnt++;
       }
-      if(commonCnt< floor(cnt * gTolerance)) {
+      if(commonCnt< floor(cnt * gParameters.Tolerance)) {
         candidates[ki] = FALSE;
         continue;
       }
@@ -480,7 +468,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         if (colcand[i] && reveTag[i]!=0)
           m_ct++;
       }
-      if (candidates[ki] && (m_ct >= floor(cnt * gTolerance)-1)) {
+      if (candidates[ki] && (m_ct >= floor(cnt * gParameters.Tolerance)-1)) {
      
         int temp;
         for(temp=0;temp<colNumber;temp++) {
@@ -526,7 +514,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
       continue;      
     }
     currBlock->block_rows = components;
-    if (gIsPValue)
+    if (gParameters.IsPValue)
       currBlock->score = -(100*log(currBlock->pvalue));
     else
       currBlock->score = currBlock->block_rows * currBlock->block_cols;
@@ -546,7 +534,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     arrBlocks[block_id++] = currBlock;
 
     /* reaching the results number limit */
-    if (block_id == gSchBlock) 
+    if (block_id == gParameters.SchBlock) 
       break;
     delete[] colcand;
   }
@@ -555,7 +543,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
 
   sort(arrBlocks, arrBlocks+block_id, &blockComp);
   
-  int n = min(block_id, gRptBlock);
+  int n = min(block_id, gParameters.RptBlock);
   bool flag;
 
   BicBlock **output = new BicBlock*[n]; // Array with filtered biclusters
@@ -589,7 +577,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
           inter_cols++;
         }
       }
-      if (inter_rows*inter_cols > gFilter*cur_rows*cur_cols) {
+      if (inter_rows*inter_cols > gParameters.Filter*cur_rows*cur_cols) {
         flag = FALSE;
         break;
       }
@@ -603,7 +591,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     }
   }
   List outList = fromBlocks(output, j, rowNumber, colNumber);
-  for(auto ind =0; ind<gSchBlock; ind++)
+  for(auto ind =0; ind<gParameters.SchBlock; ind++)
     if(arrBlocks!=NULL)
       delete arrBlocks[ind];
   delete[] arrBlocks;

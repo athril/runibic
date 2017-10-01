@@ -11,12 +11,7 @@
 
 using namespace std;
 using namespace Rcpp;
-
-
-
-extern int gTFindex; // Index EOF?
-extern int gColWidth; // TODO: check usage of this option
-extern int gDivided;// TODO: check usage of this option
+extern Params gParameters;
 
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum) {
   int profiles[rowNum];
@@ -60,7 +55,9 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 
 
 
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, int rowNum, int colNum,short *lcsLength, char** lcsTags, vector<int> *inputData) {
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, Params* params,short *lcsLength, char** lcsTags, vector<int> *inputData) {
+  int rowNum = gParameters.RowNumber;
+  int colNum = gParameters.ColNumber;
   int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
   float cnt_ave=0;
   long double pvalue;
@@ -139,16 +136,16 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
       else 
         poisson=poisson*cnt_ave/(i+1);
     }
-    if (gIsCond) {
-      if (max_cnt < gColWidth || max_i < 0|| max_cnt < block->cond_low_bound) break;
+    if (gParameters.IsCond) {
+      if (max_cnt < gParameters.ColWidth || max_i < 0|| max_cnt < block->cond_low_bound) break;
     }
     else {
-      if (max_cnt < gColWidth || max_i < 0){
+      if (max_cnt < gParameters.ColWidth || max_i < 0){
         break;        
       }
     }
     int tempScore = 0;
-    if (gIsArea)
+    if (gParameters.IsArea)
       tempScore = *components*max_cnt;
     else
       tempScore = min(*components, max_cnt);
@@ -179,7 +176,7 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
 
   maxvalue = 0;
   length1=length2=0;
-  rank = gDivided;
+  rank = gParameters.Divided;
 
   for(auto i=0;i<colNum;i++) {
     temp2[i]=0;
@@ -214,7 +211,7 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
       }
     }
   }
-  if(gDataMode==0 && gQuantile < 0.5) {
+  if(gParameters.Quantile < 0.5) {
     for(auto i=rank*(-1);i<=-1;i++) {
       for(auto j=0;j<colNum;j++) {
         if(lcs_seed!=NULL) {
