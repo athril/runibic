@@ -27,6 +27,9 @@ Params gParameters;
 //' @param x a numeric matrix
 //' @return a discretized matrix containing integers only
 //'
+//' @examples
+//' discretize(replicate(10, rnorm(20)))
+//'
 // [[Rcpp::export]]
 Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
   IntegerMatrix y(x.nrow(),x.ncol());
@@ -221,7 +224,7 @@ bool is_longer(const triple& x, const triple& y) {
   return false;
 }
 
-
+/*
 //' This function calculates all pairwise LCSes within the array.
 //'
 //' This function computes unique pairwise Longest Common Subsequences within the matrix.
@@ -232,7 +235,7 @@ bool is_longer(const triple& x, const triple& y) {
 //' @examples
 //' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 //'
-
+*/
 std::vector<triple> calculateLCS(Rcpp::IntegerMatrix discreteInput) {
   int size=discreteInput.nrow()*(discreteInput.nrow()-1)/2;
   vector<triple> triplets(size);

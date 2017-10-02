@@ -3,7 +3,7 @@
 #' @author Patryk Orzechowski
 #' @name runibic
 #' @useDynLib runibic
-#' @import Rcpp biclust
+#' @import Rcpp biclust testthat
 #' @importFrom Rcpp evalCpp
 #' @exportPattern "^[[:alpha:]]+"
 NULL
