@@ -175,17 +175,18 @@ Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 //' This function retrieves the Longest Common Subsequence (LCS)
 //' between two numeric vectors by backtracking the matrix obtained with dynamic programming.
 //'
-//' @param c an integer numeric matrix prepared using pairwiseLCS()
 //' @param x an integer vector
 //' @param y an integer vector
 //' @return an integer with the length of Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' backtrackLCS( pairwiseLCS(c(1,2,3,4,5),c(1,2,4)), c(1,2,3,4,5),c(1,2,4))
+//' backtrackLCS( c(1,2,3,4,5),c(1,2,4))
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
+Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
+//Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
+  Rcpp::IntegerMatrix c = pairwiseLCS(x,y);
   auto index=c(c.nrow()-1,c.ncol()-1);
   auto i=x.size(), j=y.size();
   Rcpp::IntegerVector lcs(index);
@@ -206,6 +207,20 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, R
 }
 
 
+struct triple {
+  int geneA;
+  int geneB;
+  int lcslen;
+};
+
+bool is_longer(const triple& x, const triple& y) { 
+  if (x.lcslen < y.lcslen);
+    return true;
+  if (x.lcslen == y.lcslen)
+    return (x.geneA<y.geneB);
+  return false;
+}
+
 
 //' This function calculates all pairwise LCSes within the array.
 //'
@@ -217,13 +232,13 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, R
 //' @examples
 //' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 //'
-//' @export
-// [[Rcpp::export]]
-Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput) {
+
+std::vector<triple> calculateLCS(Rcpp::IntegerMatrix discreteInput) {
   int size=discreteInput.nrow()*(discreteInput.nrow()-1)/2;
-  vector<int> geneA(size);
-  vector<int> geneB(size);
-  vector<int> lcslen(size);
+  vector<triple> triplets(size);
+//  vector<int> geneA(size);
+//  vector<int> geneB(size);
+//  vector<int> lcslen(size);
 
 
 // TODO: change into parallel version
@@ -236,25 +251,41 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput) {
     for (auto j=i+1; j<discreteInput.nrow(); j++) {
       IntegerVector a = discreteInput(i,_);
       IntegerVector b = discreteInput(j,_);
-      geneA[k]=i;
-      geneB[k]=j;
+//      geneA[k]=i;
+//      geneB[k]=j;
       IntegerMatrix res=pairwiseLCS(a,b);
-      lcslen[k]=res[res.size()-1,res.size()-1];
+//      lcslen[k]=res[res.size()-1,res.size()-1];
+      triplets[k]={i,j,res[res.size()-1,res.size()-1]};
       k++;
     }
   }
+//  cout << "SIZE: " << geneA.size() << " " << size << endl;
 
+//  std::vector<std::size_t> indexes;
+//  for (auto i = 0; i!=size; ++i) { indexes.push_back(i); }
+//    std::sort( indexes.begin(), indexes.end(), [&](const std::size_t &i1, const std::size_t &i2) { return lcslen[i1] <= lcslen[i2]; });
 
-/* TODO: sort according to lcslen. The following sorting doesn't work:
-  std::sort( std::begin(geneA),std::end(geneA), [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
-  std::sort( std::begin(geneB),std::end(geneB), [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
-  std::sort( std::begin(lcslen),std::end(lcslen));//, [&](int i1, int i2) { return lcslen[i1] > lcslen[i2]; } );
-  potential workaround: https://stackoverflow.com/questions/37368787/c-sort-one-vector-based-on-another-one
-*/
+//  std::sort( striplets.begin(); triplets.end(), is_longer);
+//  std::sort( std::begin(triplets); std::end(triplets), is_longer);
+  std::sort( triplets.begin(), triplets.end(), is_longer);
+  for (int i=0; i<triplets.size(); i++) {
+    cout << triplets[i].geneA << " " << triplets[i].geneB << ":" << triplets[i].lcslen << endl;
+  }
+
+  return triplets;
+// TODO: sort according to lcslen. The following sorting doesn't work:
+//  std::sort( std::begin(geneA),std::end(geneA), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
+//  std::sort( std::begin(geneB),std::end(geneB), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
+//  std::sort( std::begin(lcslen),std::end(lcslen), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
+//  potential workaround: https://stackoverflow.com/questions/37368787/c-sort-one-vector-based-on-another-one
+/*
   return List::create(
            Named("a") = geneA,
            Named("b") = geneB,
            Named("lcslen") = lcslen);
+
+*/
+//           Named("order") = triplets);
 }
 
 
@@ -388,7 +419,13 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
       colsStat[i] = 0;
       temptag[i] = 0;
     }
+
+
+
+
+    //PO: is it simply calulating how often a given column appears in the vector<vector<int>> ?
     for(auto i=1;i<components;i++) {
+      //PO: backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber])
       getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber],temptag, NULL, colNumber);
       for(auto j=0;j<colNumber;j++)
       {      
@@ -397,6 +434,9 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         temptag[j]=0;
       }
     }
+
+
+
     cnt = 0;
     for(auto i=0;i<colNumber;i++) {
       if (colsStat[i] >= threshold) {
@@ -462,6 +502,13 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         candidates[ki] = FALSE;
         continue;
       }
+
+      //PO: I think the following lines should be the same as the following code
+      /*
+      Rcpp::IntegerVector lcs=backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber]);
+      std::reverse(std::begin(lcs), std::end(lcs));
+      backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], lcs);
+      */
       getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber],&discreteInputData[ki*colNumber],reveTag,lcsTags[vecGenes[1]],colNumber, true);
       m_ct = 0;
       for (auto i=0; i< colNumber; i++) {

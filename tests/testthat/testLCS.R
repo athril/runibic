@@ -19,8 +19,7 @@ test_that("Calculating Longest Common Subsequence (LCS): pairwiseLCS", {
 
 test_that("Retrieving LCS: backtrackLCS", {
   A = matrix(c(1,2,1,5,4,3,  2,1,3,2,1,4), nrow=2, byrow=TRUE)
-  B = pairwiseLCS(A[1,],A[2,])
   result=c(1,2,1,4)
-  C = backtrackLCS(B,A[1,],A[2,])
+  C = backtrackLCS(A[1,],A[2,])
   expect_that(C, equals(result))
 })

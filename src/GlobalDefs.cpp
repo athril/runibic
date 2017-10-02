@@ -54,7 +54,7 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 }
 
 
-
+//lcsTags is vector<vector<int>>
 void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, Params* params,short *lcsLength, char** lcsTags, vector<int> *inputData) {
   int rowNum = gParameters.RowNumber;
   int colNum = gParameters.ColNumber;
@@ -75,6 +75,10 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   t0=genes->at(0);
   t1=genes->at(1);
 
+  //PO: no need for this code?
+  //PO: No need to initialize lcsTags. The vector is empty. lcsLength is 0.
+  /*cut-from*/
+
   g1 = &((*inputData)[t0*colNum]);
   g2 = &((*inputData)[t1*colNum]);
   for(auto i=0;i<rowNum;i++) {
@@ -82,8 +86,15 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
     for(auto j=0;j<colNum;j++)
       lcsTags[i][j]=0;
   }
+  /*cut-to*/
+
+
+
   /*************************calculate the lcs*********************************/
 
+
+  //PO: It seems to be the same as calling 
+  //PO: backtrackLCS(g1,g2)
   lcsLength[t1]=getGenesFullLCS(g1,g2,lcsTags[t1],NULL,colNum); 
   for(auto i=0;i<colNum;i++) {
     if(lcsTags[t1][i]!=0) {
@@ -94,8 +105,14 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   for(auto j=0;j<rowNum;j++) {
     if (j==t1 || j==t0)
       continue;
+
+
+  //PO: This should be modified to:
+  //PO: lcsLength=backtrackLCS(g1, ??? ).size()
     lcsLength[j]= getGenesFullLCS(g1,&(*inputData)[j*colNum],lcsTags[j],lcsTags[t1],colNum); 
   }
+
+
 
   while (*components < rowNum) {
     max_cnt = -1;
@@ -166,6 +183,20 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   delete[] arrRows;
   delete[] arrRowsB;
 }
+
+
+
+
+
+
+//int Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) <- computes LCS between 2 pairs
+//Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y)  <- gets exact LCS of 2 pairs: x,y
+//
+// Calling:
+// {lcs_tg,maxvalue} = getGenesFullLCS(s1,s2,_,_._,reverse)
+// should be the same as calling: 
+// backtrackLCS(s1,s2).
+
 int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  int colNum,bool reverse) {
   vector<int> maxRecord;/*record the max value of matrix*/
   int maxvalue,rank,length1,length2;
