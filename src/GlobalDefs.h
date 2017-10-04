@@ -16,7 +16,7 @@ public:
   , IsCond(false)
   , IsArea(false)
   , RptBlock(100)
-  , Filter(0.25)
+  , Filter(1)
   , Shuffle(0)
   , Divided(100)
   , RowNumber(0)
@@ -39,7 +39,13 @@ public:
     RowNumber = rowNum;
     ColNumber = colNum;
     ColWidth = std::max(3+floor(colNum/30),4.0); 
-    Divided = colNum;
+    if(Divided==0)
+      if(rowNum > 2000)
+        Divided = 15;
+      else
+        Divided = colNum;
+    
+    
   }
 };
 /* biclustering block */

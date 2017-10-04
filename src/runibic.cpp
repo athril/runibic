@@ -14,21 +14,49 @@ using namespace std;
 using namespace Rcpp;
 
 Params gParameters;
+
 // [[Rcpp::plugins(cpp11)]]
 // Enable OpenMP (exclude macOS)
 // [[Rcpp::plugins(openmp)]]
 
 
+
+//' Set the parameters
+//'
+//' Runibic function for setting parameters
+//'
+//' @param t consistency level of the block (0.5-1.0] 
+//' @param q a double value for quantile discretization
+//' @param f filtering overlapping blocks, default 1(do not remove any blocks)
+//' @param nbic maximum number of biclusters in output
+//' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
+//'
+//' @examples
+//' runibic_params(0.85,100,1,100,0)
+//'
+// [[Rcpp::export]]
+void runibic_params(double t = 0.85,double q = 0.5,double f = 1, int nbic = 100,int div = 0)
+{
+  gParameters.Tolerance=t;
+  gParameters.Quantile = q;
+  gParameters.Filter = f;
+  gParameters.RptBlock = nbic;
+  gParameters.SchBlock = 2*gParameters.RptBlock;
+  gParameters.Divided = div;
+}
+
+
 //' Discretize an input matrix
 //'
 //' This function discretizes the input matrix
-//' TODO: Implement functionality
 //'
 //' @param x a numeric matrix
+//' @param quantile a double value for quantile discretization
+//' @param divided number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 //' @return a discretized matrix containing integers only
 //'
 //' @examples
-//' discretize(replicate(10, rnorm(20)))
+//' discretize(replicate(10, rnorm(20)), 0.5,0)
 //'
 // [[Rcpp::export]]
 Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
@@ -217,14 +245,14 @@ struct triple {
 };
 
 bool is_longer(const triple& x, const triple& y) { 
-  if (x.lcslen < y.lcslen);
+  if (x.lcslen > y.lcslen)
     return true;
   if (x.lcslen == y.lcslen)
     return (x.geneA<y.geneB);
   return false;
 }
 
-/*
+
 //' This function calculates all pairwise LCSes within the array.
 //'
 //' This function computes unique pairwise Longest Common Subsequences within the matrix.
@@ -235,33 +263,42 @@ bool is_longer(const triple& x, const triple& y) {
 //' @examples
 //' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 //'
-*/
-std::vector<triple> calculateLCS(Rcpp::IntegerMatrix discreteInput) {
-  int size=discreteInput.nrow()*(discreteInput.nrow()-1)/2;
+//' @export
+// [[Rcpp::export]]
+Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput) {
+
+  int PART = 4;
+  int step = discreteInput.nrow()/PART;
+  int size = (PART-1)*(step*(step-1)/2);
+  int rest = step+(discreteInput.nrow()%PART);                                                                                                                                     
+  size+= rest*(rest-1)/2;
   vector<triple> triplets(size);
-//  vector<int> geneA(size);
-//  vector<int> geneB(size);
-//  vector<int> lcslen(size);
-
-
 // TODO: change into parallel version
 // there should be 1-level for loop across all combinations of pairs of rows
 //  #pragma omp parallel for private(a,b,i,j,res) schedule(dynamic)
 //  for ( auto k=0; k<size; k++ ) {
 //    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
+
   int k=0;
-  for (auto i=0; i<discreteInput.nrow(); i++) {
-    for (auto j=i+1; j<discreteInput.nrow(); j++) {
-      IntegerVector a = discreteInput(i,_);
-      IntegerVector b = discreteInput(j,_);
-//      geneA[k]=i;
-//      geneB[k]=j;
-      IntegerMatrix res=pairwiseLCS(a,b);
-//      lcslen[k]=res[res.size()-1,res.size()-1];
-      triplets[k]={i,j,res[res.size()-1,res.size()-1]};
-      k++;
+  for(auto p = 0; p < PART; p++){
+
+    auto endi = (p+1)*step;
+    if(p == PART-1)
+      endi = discreteInput.nrow();
+    for (auto i=p*step; i<endi; i++) {
+      for (auto j=i+1; j<endi; j++) {
+        IntegerVector a = discreteInput(i,_);
+        IntegerVector b = discreteInput(j,_);
+  //      geneA[k]=i;
+  //      geneB[k]=j;
+        IntegerMatrix res=pairwiseLCS(a,b);
+  //      lcslen[k]=res[res.size()-1,res.size()-1];
+        triplets[k]={i,j,res[res.size()-1,res.size()-1]};
+        k++;
+      }
     }
   }
+  
 //  cout << "SIZE: " << geneA.size() << " " << size << endl;
 
 //  std::vector<std::size_t> indexes;
@@ -270,24 +307,29 @@ std::vector<triple> calculateLCS(Rcpp::IntegerMatrix discreteInput) {
 
 //  std::sort( striplets.begin(); triplets.end(), is_longer);
 //  std::sort( std::begin(triplets); std::end(triplets), is_longer);
-  std::sort( triplets.begin(), triplets.end(), is_longer);
+  sort( triplets.begin(), triplets.end(), &is_longer);
+  Rcpp::IntegerVector geneA(triplets.size());
+  Rcpp::IntegerVector geneB(triplets.size());
+  Rcpp::IntegerVector lcslen(triplets.size());
   for (int i=0; i<triplets.size(); i++) {
-    cout << triplets[i].geneA << " " << triplets[i].geneB << ":" << triplets[i].lcslen << endl;
+    geneA(i) = triplets[i].geneA;
+    geneB(i) = triplets[i].geneB;
+    lcslen(i) = triplets[i].lcslen;
   }
 
-  return triplets;
+  //return triplets;
 // TODO: sort according to lcslen. The following sorting doesn't work:
 //  std::sort( std::begin(geneA),std::end(geneA), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  std::sort( std::begin(geneB),std::end(geneB), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  std::sort( std::begin(lcslen),std::end(lcslen), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  potential workaround: https://stackoverflow.com/questions/37368787/c-sort-one-vector-based-on-another-one
-/*
+
   return List::create(
            Named("a") = geneA,
            Named("b") = geneB,
            Named("lcslen") = lcslen);
 
-*/
+
 //           Named("order") = triplets);
 }
 
