@@ -38,13 +38,15 @@ public:
   void InitOptions(int rowNum, int colNum){
     RowNumber = rowNum;
     ColNumber = colNum;
-    ColWidth = std::max(3+floor(colNum/30),4.0); 
-    if(Divided==0)
-      if(rowNum > 2000)
+    ColWidth = std::max(3+floor(colNum/30),4.0);
+    if(Divided==0) {
+      if(rowNum > 2000) {
         Divided = 15;
-      else
+      }
+      else {
         Divided = colNum;
-    
+      }
+    }
     
   }
 };
@@ -59,7 +61,6 @@ typedef struct BicBlock {
   int cond_low_bound;
   double significance;
   long double pvalue;
-  
 } BicBlock;
 
 double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam);

@@ -30,6 +30,7 @@ Params gParameters;
 //' @param f filtering overlapping blocks, default 1(do not remove any blocks)
 //' @param nbic maximum number of biclusters in output
 //' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
+//' @return NULL (an empty value)
 //'
 //' @examples
 //' runibic_params(0.85,100,1,100,0)
@@ -51,12 +52,11 @@ void runibic_params(double t = 0.85,double q = 0.5,double f = 1, int nbic = 100,
 //' This function discretizes the input matrix
 //'
 //' @param x a numeric matrix
-//' @param quantile a double value for quantile discretization
-//' @param divided number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 //' @return a discretized matrix containing integers only
 //'
 //' @examples
-//' discretize(replicate(10, rnorm(20)), 0.5,0)
+//' A=replicate(10, rnorm(20))
+//' discretize(A)
 //'
 // [[Rcpp::export]]
 Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
@@ -64,12 +64,11 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
 
   gParameters.InitOptions(x.nrow(),x.ncol());
 
-  
   if(gParameters.Quantile >=0.5){
     for(auto iRow = 0; iRow < x.nrow(); iRow++){
       NumericVector rowData = x(iRow,_);
       sort(rowData.begin(), rowData.end());
-  
+
       for(auto iCol = 0; iCol < x.ncol(); iCol++){
         double dSpace = 1.0 / gParameters.Divided;
         for(auto ind=0; ind < gParameters.Divided; ind++){
@@ -128,7 +127,8 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
 //' @return a numeric matrix with indexes indicating positions of j-th smallest element in each row
 //'
 //' @examples
-//' unisort(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+//' A=matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE)
+//' unisort(A)
 //'
 //' @export
 // [[Rcpp::export]]

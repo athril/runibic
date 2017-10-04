@@ -1,0 +1,12 @@
+---
+author: "Patryk Orzechowski, Artur Panszczyk"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{runibic: UniBic in R Tutorial}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+
+Vignette for runibic
