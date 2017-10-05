@@ -13,6 +13,17 @@ using namespace std;
 using namespace Rcpp;
 extern Params gParameters;
 
+int edge_cmpr(void *a, void *b)
+{
+	float score_a, score_b;
+	score_a = ((triple *)a)->lcslen;
+	score_b = ((triple *)b)->lcslen;
+
+	if (score_a < score_b) return -1;
+	if (score_a == score_b) return 0;
+	return 1;
+}
+
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum) {
   int profiles[rowNum];
   int b1,b2,b3; // indexes for searching of first encounter
