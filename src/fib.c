@@ -1,8 +1,3 @@
-/*
- *The structure of Priority sequence to store the seeds by which we can
- *get the largest one in the sequence each time.
- */
-
 /*-
  * Copyright 1997-2003 John-Mark Gurney.
  * All rights reserved.
@@ -32,7 +27,12 @@
  *
  */
 
-#include "struct.h" 
+
+
+#include <limits.h>
+#include <stdlib.h>
+#include "fib.h"
+#include "fibpriv.h"
 
 #define swap(type, a, b)		\
 		do {			\
@@ -43,37 +43,8 @@
 		} while (0)		\
 
 #define INT_BITS        (sizeof(int) * 8)
-
-/* Prototypes */
-static void fh_initheap(struct fibheap *);
-static void fh_insertrootlist(struct fibheap *, struct fibheap_el *);
-static void fh_removerootlist(struct fibheap *, struct fibheap_el *);
-static void fh_consolidate(struct fibheap *);
-static void fh_heaplink(struct fibheap *h, struct fibheap_el *y,
-            struct fibheap_el *x);
-static void fh_cut(struct fibheap *, struct fibheap_el *, struct fibheap_el *);
-static void fh_cascading_cut(struct fibheap *, struct fibheap_el *);
-static struct fibheap_el *fh_extractminel(struct fibheap *);
-static void fh_checkcons(struct fibheap *h);
-static void fh_destroyheap(struct fibheap *h);
-static int fh_compare(struct fibheap *h, struct fibheap_el *a,
-            struct fibheap_el *b);
-static int fh_comparedata(struct fibheap *h, int key, void *data,
-            struct fibheap_el *b);
-static void fh_insertel(struct fibheap *h, struct fibheap_el *x);
-static void fh_deleteel(struct fibheap *h, struct fibheap_el *x);
-
-static struct fibheap_el *fhe_newelem(void);
-static void fhe_initelem(struct fibheap_el *);
-static void fhe_insertafter(struct fibheap_el *a, struct fibheap_el *b);
-static void fhe_insertbefore(struct fibheap_el *a, struct fibheap_el *b);
-static struct fibheap_el *fhe_remove(struct fibheap_el *a);
-
-/*
- * general functions
- */
-
-static int ceillog2(unsigned int a)
+static inline int
+ceillog2(unsigned int a)
 {
 	int oa;
 	int i;
@@ -118,7 +89,7 @@ fh_deleteel(struct fibheap *h, struct fibheap_el *x)
 		 * XXX - This should never happen as fh_replace should set it
 		 * to min.
 		 */
-		abort();
+		/*abort();*/
 	}
 
 	x->fhe_data = data;
@@ -308,7 +279,7 @@ fh_replacekeydata(struct fibheap *h, struct fibheap_el *x, int key, void *data)
 	 */
 	if ((r = fh_comparedata(h, key, data, x)) > 0) {
 		/* XXX - bad code! */
-		abort();
+		/*abort();*/
 		fh_deleteel(h, x);
 
 		x->fhe_data = data;
@@ -633,7 +604,8 @@ fhe_insertafter(struct fibheap_el *a, struct fibheap_el *b)
 	}
 }
 
-static void fhe_insertbefore(struct fibheap_el *a, struct fibheap_el *b)
+static inline void
+fhe_insertbefore(struct fibheap_el *a, struct fibheap_el *b)
 {
 	fhe_insertafter(a->fhe_left, b);
 }
@@ -676,8 +648,8 @@ fh_checkcons(struct fibheap *h)
 		if (oDl != h->fh_Dl)
 			h->fh_cons = (struct fibheap_el **)realloc(h->fh_cons,
 			    sizeof *h->fh_cons * (h->fh_Dl + 1));
-		if (h->fh_cons == NULL)
-			abort();
+		/*if (h->fh_cons == NULL)
+			abort(); */
 	}
 }
 

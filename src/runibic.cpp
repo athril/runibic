@@ -239,12 +239,12 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 
 
 
-bool is_longer(const triple& x, const triple& y) { 
-  if (x.lcslen > y.lcslen)
-    return true;
-  if (x.lcslen == y.lcslen)
-    return (x.geneA<y.geneB);
-  return false;
+bool is_longer(const triple* x, const triple* y) { 
+  if (x->lcslen > y->lcslen)
+    return TRUE;
+  if (x->lcslen == y->lcslen)
+    return (x->geneA<y->geneB);
+  return FALSE;
 }
 
 
@@ -253,10 +253,11 @@ bool is_longer(const triple& x, const triple& y) {
 //' This function computes unique pairwise Longest Common Subsequences within the matrix.
 //'
 //' @param discreteInput is a matrix
+//' @param useFibHeap boolean value if Fibonacci heap should be used for sorting and seeding
 //' @return a list with informa
 //'
 //' @examples
-//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE), true)
+//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE), TRUE)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -268,16 +269,17 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
   int rest = step+(discreteInput.nrow()%PART);                                                                                                                                     
   size+= rest*(rest-1)/2;
 
-  triple** triplets = new triple[size];
+  triple** triplets = new triple*[size];
   struct fibheap *heap;
-	heap = fh_makeheap();
-	fh_setcmp(heap, edge_cmpr);
+  heap = fh_makeheap();
+  fh_setcmp(heap, edge_cmpr);
 // TODO: change into parallel version
 // there should be 1-level for loop across all combinations of pairs of rows
 //  #pragma omp parallel for private(a,b,i,j,res) schedule(dynamic)
 //  for ( auto k=0; k<size; k++ ) {
 //    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
-  triple __cur_min = {0, 0, po->COL_WIDTH};
+  //triple __cur_min = {0, 0, po->COL_WIDTH};
+  triple __cur_min = {0, 0, discreteInput.ncol()};
   triple *_cur_min = &__cur_min;
   triple **cur_min = & _cur_min;
   int k=0;
@@ -315,7 +317,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
               *cur_min = (triple *)fh_min(heap);
             }
           }
-        }        
+        }
         k++;
       }
     }
@@ -335,7 +337,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
   if(useFibHeap){
 
     for(int i=size-1; i>=0; i--){
-      triple* res = ((triple*)fh_extractmin(heap));
+      triple *res= static_cast<triple *>(fh_extractmin(heap));
       geneA(i) = res->geneA;
       geneB(i) = res->geneB;
       lcslen(i) = res->lcslen;
@@ -460,7 +462,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
       candThreshold = 2;
     /* maintain a candidate list to avoid looping through all rows */		
     for (auto j = 0; j < rowNumber; j++) 
-      candidates[j] = TRUE;
+      candidates[j] = true;
     candidates[(int)geneOne(ind)] = candidates[(int)geneTwo(ind)] = FALSE;
     components = 2;
     /* expansion step, generate a bicluster without noise */
@@ -479,7 +481,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     if(components > vecGenes.size())
       components = vecGenes.size();    
     for (auto ki=0; ki < rowNumber; ki++) {
-      candidates[ki] = TRUE;
+      candidates[ki] = true;
     }
 
     vecGenes.resize(components);    
@@ -524,16 +526,16 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     cnt = 0;
     for(auto i=0;i<colNumber;i++) {
       if (colsStat[i] >= threshold) {
-        colcand[i] = TRUE;
+        colcand[i] = true;
         cnt++;
       }
     }
     delete[] temptag;
     // add some new possible genes
     int m_ct=0;
-    bool colChose = TRUE;
+    bool colChose = true;
     for(auto ki=0;ki < rowNumber;ki++) {
-      colChose=TRUE;
+      colChose=true;
       //if(!candidates[ki]) //if ((po->IS_list && !sublist[ki]) || !candidates[ki]) TODO Sublist check;
       //  continue;
       m_ct=0;
@@ -554,7 +556,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
             }
           }
         }
-        if(colChose==TRUE) {
+        if(colChose==true) {
           vecGenes.push_back(ki);
           components++;
           candidates[ki] = FALSE;
@@ -571,7 +573,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     // add genes that negative regulated to the consensus 
     char * reveTag;
     for (auto ki = 0; ki < rowNumber; ki++) {
-      colChose=TRUE;
+      colChose=true;
      // if (!candidates[ki]) *always false in our case
       //  continue;
       reveTag = new char[colNumber];
@@ -613,7 +615,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
             }
           }
         }
-        if(colChose == TRUE) {
+        if(colChose == true) {
           vecGenes.push_back(ki);
           components++;
           candidates[ki] = FALSE;
@@ -634,7 +636,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     // currBlock->conds = dsNew(cols);
 
     for (auto j = 0; j < colNumber; j++) {
-      if (colcand[j]==TRUE) {
+      if (colcand[j]==true) {
         currBlock->conds.push_back(j);
       }
     }
@@ -691,7 +693,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     cur_rows = b_ptr->block_rows;
     cur_cols = b_ptr->block_cols;
     
-    flag = TRUE;
+    flag = true;
     k = 0;
     while (k < j) {
       inter_rows =0;

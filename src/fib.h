@@ -1,5 +1,5 @@
 /*-
- * Copyright 1997, 1999-2003 John-Mark Gurney.
+ * Copyright 1997, 1998-2003 John-Mark Gurney.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,53 +23,17 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fibpriv.h,v 1.12 2003/01/14 10:11:30 jmg Exp $
+ *	$Id: fib.h,v 1.10 2003/01/14 10:11:30 jmg Exp $
  *
  */
 
 #ifndef _FIB_H_
 #define _FIB_H_
 
-struct fibheap_el;
 
-/*
- * global heap operations
- */
-struct fibheap {
-	int	(*fh_cmp_fnct)(void *, void *);
-	int	fh_n;
-	int	fh_Dl;
-	struct	fibheap_el **fh_cons;
-	struct	fibheap_el *fh_min;
-	struct	fibheap_el *fh_root;
-	void	*fh_neginf;
-	int	fh_keys		: 1;
-#ifdef FH_STATS
-	int	fh_maxn;
-	int	fh_ninserts;
-	int	fh_nextracts;
-#endif
-};
-
-/*
- * specific node operations
- */
-struct fibheap_el {
-	int	fhe_degree;
-	int	fhe_mark;
-	struct	fibheap_el *fhe_p;
-	struct	fibheap_el *fhe_child;
-	struct	fibheap_el *fhe_left;
-	struct	fibheap_el *fhe_right;
-	int	fhe_key;
-	void	*fhe_data;
-};
-
-#define	fhe_destroy(x)	free((x))
-
-/*
- * general functions
- */
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct fibheap;
 struct fibheap_el;
@@ -101,5 +65,9 @@ int fh_maxn(struct fibheap *);
 int fh_ninserts(struct fibheap *);
 int fh_nextracts(struct fibheap *);
 #endif
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* _FIB_H_ */

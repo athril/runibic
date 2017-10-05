@@ -90,14 +90,15 @@ backtrackLCS <- function(x, y) {
 #' This function computes unique pairwise Longest Common Subsequences within the matrix.
 #'
 #' @param discreteInput is a matrix
+#' @param useFibHeap boolean value if Fibonacci heap should be used for sorting and seeding
 #' @return a list with informa
 #'
 #' @examples
-#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE), TRUE)
 #'
 #' @export
-calculateLCS <- function(discreteInput) {
-    .Call('_runibic_calculateLCS', PACKAGE = 'runibic', discreteInput)
+calculateLCS <- function(discreteInput, useFibHeap) {
+    .Call('_runibic_calculateLCS', PACKAGE = 'runibic', discreteInput, useFibHeap)
 }
 
 #' Calculating biclusters from sorted list of LCS scores

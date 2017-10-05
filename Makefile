@@ -7,7 +7,7 @@
 PKG_VERSION=$(shell grep -i ^Version: DESCRIPTION | sed 's/^.*: //g')
 PKG_NAME=$(shell grep -i ^Package: DESCRIPTION | sed 's/^.*: //g')
 CXX_STD = CXX11
-PKG_CXXFLAGS = -std=c++11 -fopenmp
+PKG_CXXFLAGS = -std=c++11 -fopenmp -fPIC
 
 
 R_FILES := $(wildcard R/*.R)
