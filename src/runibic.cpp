@@ -239,12 +239,12 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 
 
 
-bool is_longer(const triple* x, const triple* y) { 
+bool is_higher(const triple* x, const triple* y) {
   if (x->lcslen > y->lcslen)
-    return TRUE;
+    return true;
   if (x->lcslen == y->lcslen)
     return (x->geneA<y->geneB);
-  return FALSE;
+  return false;
 }
 
 
@@ -257,18 +257,18 @@ bool is_longer(const triple* x, const triple* y) {
 //' @return a list with informa
 //'
 //' @examples
-//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE), TRUE)
+//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
+Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true) {
 
   int PART = 4;
   int step = discreteInput.nrow()/PART;
   int size = (PART-1)*(step*(step-1)/2);
-  int rest = step+(discreteInput.nrow()%PART);                                                                                                                                     
+  int rest = step+(discreteInput.nrow()%PART);
   size+= rest*(rest-1)/2;
-
+  cout<< "SIZE: " << size << " REST: " << rest << " ROWS: " << discreteInput.nrow() << " COLS: " << discreteInput.ncol() << endl;
   triple** triplets = new triple*[size];
   struct fibheap *heap;
   heap = fh_makeheap();
@@ -279,23 +279,21 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
 //  for ( auto k=0; k<size; k++ ) {
 //    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
   //triple __cur_min = {0, 0, po->COL_WIDTH};
-  triple __cur_min = {0, 0, discreteInput.ncol()};
+  triple __cur_min = {0, 0, gParameters.ColWidth};
   triple *_cur_min = &__cur_min;
   triple **cur_min = & _cur_min;
   int k=0;
   for(auto p = 0; p < PART; p++){
-
     auto endi = (p+1)*step;
     if(p == PART-1)
       endi = discreteInput.nrow();
+    cout << "Within (" << p*step << "," << endi << endl;
     for (auto i=p*step; i<endi; i++) {
+      cout << "i: " << i << endl;
       for (auto j=i+1; j<endi; j++) {
         IntegerVector a = discreteInput(i,_);
         IntegerVector b = discreteInput(j,_);
-  //      geneA[k]=i;
-  //      geneB[k]=j;
         IntegerMatrix res=pairwiseLCS(a,b);
-  //      lcslen[k]=res[res.size()-1,res.size()-1];
         triplets[k] = new triple;
         triplets[k]->geneA = i;
         triplets[k]->geneB = j;
@@ -345,8 +343,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap) {
 
   }
   else  {
-    sort( triplets, triplets+size, &is_longer);
-   
+    sort( triplets, triplets+size, &is_higher);
     for (int i=0; i<size; i++) {
       geneA(i) = triplets[i]->geneA;
       geneB(i) = triplets[i]->geneB;
@@ -426,14 +423,14 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
   //Main loop
   for(auto ind = 0; ind < scores.size(); ind++) {
     /* check if both genes already enumerated in previous blocks */
-    bool flag = TRUE;
+    bool flag = true;
     /* speed up the program if the rows bigger than 200 */
     if (rowNumber > 250) {
       auto result1 = find(vecAllInCluster.begin(), vecAllInCluster.end(), geneOne(ind));
       auto result2 = find(vecAllInCluster.begin(), vecAllInCluster.end(), geneTwo(ind));
 
       if ( result1 != vecAllInCluster.end() && result2 != vecAllInCluster.end())
-        flag = FALSE;
+        flag = false;
     }
     else {
       flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, block_id, rowNumber);

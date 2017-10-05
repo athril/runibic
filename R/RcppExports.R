@@ -94,10 +94,10 @@ backtrackLCS <- function(x, y) {
 #' @return a list with informa
 #'
 #' @examples
-#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE), TRUE)
+#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
 #'
 #' @export
-calculateLCS <- function(discreteInput, useFibHeap) {
+calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
     .Call('_runibic_calculateLCS', PACKAGE = 'runibic', discreteInput, useFibHeap)
 }
 
