@@ -33,7 +33,7 @@ install: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD INSTALL $(PKG_NAME)_$(PKG_VERSION).tar.gz
 
 NAMESPACE: $(R_FILES)
-	Rscript -e "library(roxygen2);roxygenize('.')"
+	Rscript -e "library(roxygen2);roxygen2::roxygenize('.', roclets=c('rd', 'collate', 'namespace'))"
 
 biocheck: 
 	R CMD BiocCheck .
@@ -42,7 +42,6 @@ clean:
 	-rm -f $(PKG_NAME)_*.tar.gz
 	-rm -rf $(PKG_NAME).Rcheck
 	-rm -rf  man
-	-rm -rf  NAMESPACE
 	-rm -f src/*.o
 	-rm -f src/*.so
 

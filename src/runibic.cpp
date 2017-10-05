@@ -268,7 +268,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
   int size = (PART-1)*(step*(step-1)/2);
   int rest = step+(discreteInput.nrow()%PART);
   size+= rest*(rest-1)/2;
-  cout<< "SIZE: " << size << " REST: " << rest << " ROWS: " << discreteInput.nrow() << " COLS: " << discreteInput.ncol() << endl;
+//  cout<< "SIZE: " << size << " REST: " << rest << " ROWS: " << discreteInput.nrow() << " COLS: " << discreteInput.ncol() << endl;
   triple** triplets = new triple*[size];
   struct fibheap *heap;
   heap = fh_makeheap();
@@ -287,9 +287,9 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
     auto endi = (p+1)*step;
     if(p == PART-1)
       endi = discreteInput.nrow();
-    cout << "Within (" << p*step << "," << endi << endl;
+//    cout << "Within (" << p*step << "," << endi << endl;
     for (auto i=p*step; i<endi; i++) {
-      cout << "i: " << i << endl;
+//      cout << "i: " << i << endl;
       for (auto j=i+1; j<endi; j++) {
         IntegerVector a = discreteInput(i,_);
         IntegerVector b = discreteInput(j,_);

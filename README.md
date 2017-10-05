@@ -1,37 +1,37 @@
-# runibic
-Unibic Biclustering algorithm for R
+# runibic: UniBic biclustering algorithm for R
+
+This package contains implementation of UniBic biclustering algorithm for gene expression data [Wang2016]
+The algorithm tries to locate trend-preserving biclusters within complex and noisy data.
+
+## Functions
+This package provides the following functions
+BCUnibic - UniBic biclustering algorithm for continuous data
+BCUnibicD - UniBic biclustering algorithm for discrete data
+pairwiseLCS - calculates Longest Common Subsequence (LCS) between two vectors
+calculateLCS - calculates multiple LCS within the dataset and prepares input for the cluster function
+backtrackLCS - recovers the LCS from the matrix obtained using dynamic programming
+cluster - seeds rows based based on the results obtained from calculateLCS
+unisort - returns matrix of indexes based on the increasing order in each row
+discretize - performs discretization using Fibonacci heap (sorting method used originally in UniBic)
 
 
-# Development
-
-In order to be able to compile the package you need to prepare flags for the compiler:
-```
-$ export PKG_CXXFLAGS='`Rscript -e "Rcpp:::CxxFlags()"` -std=c++11 -fopenmp'
-```
-
-After each modification in .cpp file, the package needs to be recompiled:
-```
-$ make
-$ R
-> library(Rcpp)
-> Rcpp::compileAttributes()
+## Installation
+The package may be installed as follows:
+```r
+install.packages("devtools")
+devtools::install_github("athril/runibic")
 ```
 
-# Compiling
+## Example
+This example presents how to use runibic package on gene expression dataset:
+```r
+library(runibic)
+library(biclust)
+data(BicatYeast)
+input=BicatYeast[1:20,1:20]
+biclust(method=BCUnibic(),input)
+```
 
-In order to compile runibic, type:
-```
-make
-```
 
-# Usage
-
-```
-library(Rcpp)
-a=replicate(10, rnorm(20))
-a
-sourceCpp("src/runibi.cpp")
-b=unisort(a)
-b
-calculateLCS(b[1,],b[2,])
-```
+## References
+[Wang2016] Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.

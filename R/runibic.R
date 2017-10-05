@@ -10,6 +10,78 @@ NULL
 
 
 
+#' Class BCUnibic
+#'
+#' Class BCUnibic performs biclustering on continuous matrix using UniBic biclustering algorithm
+#'
+#' @name BCUnibic-class
+#' @rdname BCUnibic-class
+setClass(Class = "BCUnibic", contains = "BiclustMethod",
+         prototype = prototype(biclustFunction = function(x, ...) {
+  runibic(x, ...)
+}))
+
+
+
+#' Class BCUnibicD
+#'
+#' Class BCUnibicD performs biclustering discrete matrix using UniBic biclustering algorithm.
+#'
+#' @name BCUnibicD-class
+#' @rdname BCUnibicD-class
+setClass(Class = "BCUnibicD", contains = "BiclustMethod",
+         prototype = prototype(biclustFunction = function(x, ...) {
+  runibic_d(x, ...)
+}))
+
+
+
+#' BCUnibicD
+#'
+#' \code{BCUnibicD} performs Unibic for a discret matrix.
+#'
+#' @aliases UnibicD biclust,matrix,BCUnibicD-method
+#'
+#' @describeIn Unibic biclustering algrorithm for discrete data
+#'
+#' @examples
+#' data(BicatYeast)
+#' disc<-discretize(BicatYeast[1:20,1:20])
+#' @usage \S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+BCUnibicD <- function(x=NULL, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
+  if (is.null(x)) 
+    return(methods::new("BCUnibicD"))
+  res<- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+  res@Parameters$Call = match.call()
+  return (res);
+}
+
+
+#' BCUnibic
+#'
+#' @aliases Unibic biclust,matrix,BCUnibic-method
+#'
+#' @describeIn Unibic biclustering algrorithm
+#' @param x numeric matrix
+#' @param t consistency level of the block (0.5-1.0].
+#' @param q a double value for quantile discretization
+#' @param f filtering overlapping blocks, default 1(do not remove any blocks)
+#' @param nbic maximum number of biclusters in output
+#' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
+#' @return Biclust object with detected biclusters
+#' @param method Unibic method for continuous data
+#'
+#' @examples
+#' data(BicatYeast)
+#' @usage \S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+BCUnibic <- function(x=NULL, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
+  if (is.null(x)) 
+    return(methods::new("BCUnibic"))
+  res<- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+  res@Parameters$Call = match.call()
+  return (res);
+}
+
 
 #' Parallel row-based biclustering algorithm for analysis of gene expression data in R
 #' @param x integer matrix
@@ -21,18 +93,18 @@ NULL
 #' @return Biclust object with detected biclusters
 #'
 #' @usage runibic_d(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
-
 runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 
   MYCALL <- match.call()
 
   LCSRes = calculateLCS(unisort(x),TRUE)
-#  x=t(x);
   res = cluster(x, LCSRes$lcslen,LCSRes$a,LCSRes$b, nrow(x), ncol(x) )
   return(biclust::BiclustResult(as.list(MYCALL), matrix(unlist(res["RowxNumber"]), ncol = as.numeric(res["Number"]), byrow = FALSE),
                                 matrix(unlist(res["NumberxCol"]), nrow = as.numeric(res["Number"]), byrow = FALSE), as.numeric(res["Number"]),
                                 res["info"]))
 }
+
+
 
 #' Parallel row-based biclustering algorithm for analysis of gene expression data in R
 #' @param x numeric matrix
@@ -47,11 +119,10 @@ runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 #' @examples 
 #' A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
 #' runibic(A)
-
 runibic <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
-
   runibic_params(t,q,f,nbic,div)
   x_d <- discretize(x)
   return(runibic_d(x_d, t, q, f, nbic, div))
-
 }
+
+
