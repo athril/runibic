@@ -51,6 +51,16 @@ input=BicatYeast[1:20,1:20]
 biclust(method=BCUnibic(),input)
 ```
 
+## Example
+This example presents how to use runibic package on SummarizedExperiment:
+```r
+library(runibic)
+library(SummarizedExperiment)
+data(airway, package="airway")
+se <- airway[1:20,]
+runibic(se)
+```
+
 
 ## References
 * [Cheng2000] Cheng, Yizong, and George M. Church. "Biclustering of expression data." Ismb. Vol. 8. No. 2000. 2000.
