@@ -134,5 +134,7 @@ list(a=lcs$a[2], b=lcs$b[2], lclen=lcs$lcslen[2])
 #discretize a matrix
 B=replicate(10, rnorm(10))
 B
-discretize(B, )
+
+#check each row
+discretize(B)
 

@@ -30,7 +30,7 @@ Parallel row-based biclustering algorithm for analysis of gene expression data i
 Parallel row-based biclustering algorithm for analysis of gene expression data in R
 }
 \examples{
-A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
+A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 runibic(A)
 }
 \author{

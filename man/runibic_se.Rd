@@ -26,7 +26,7 @@ List of Biclust objects with detected bicluster for each result from every assay
 Parallel row-based biclustering algorithm for analysis of gene expression data in R
 }
 \examples{
-A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
+A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 se = SummarizedExperiment(assays=list(counts=A))
 runibic_se(se)
 }
