@@ -398,7 +398,12 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
 
   int block_id = 0;
   int cnt = 0;
-  vector<int> discreteInputData = as<vector<int> >(discreteInput);
+  vector<vector<int>> discreteInputData(discreteInput.nrow()); 
+ 
+  for (int i = 0; i < discreteInput.nrow(); i++) {
+    discreteInputData[i].resize(discreteInput.ncol());
+    for (int j = 0; j < discreteInput.ncol(); j++) discreteInputData[i][j] = (discreteInput(i, j));
+  }
   BicBlock** arrBlocks = new BicBlock*[gParameters.SchBlock];
   for(auto ind =0; ind<gParameters.SchBlock; ind++)
     arrBlocks[ind] = NULL;
@@ -509,7 +514,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     //PO: is it simply calulating how often a given column appears in the vector<vector<int>> ?
     for(auto i=1;i<components;i++) {
       //PO: backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber])
-      getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber],temptag, NULL, colNumber);
+      getGenesFullLCS(discreteInputData[vecGenes[0]].data(), discreteInputData[vecGenes[i]].data(),temptag, NULL, colNumber);
       for(auto j=0;j<colNumber;j++)
       {      
         if(temptag[j]!=0)
@@ -578,7 +583,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
         reveTag[i] = 0;
       int commonCnt=0;
       for (auto i=0;i<colNumber;i++) {
-        if (discreteInputData[vecGenes[0]*colNumber+i] * (discreteInputData[ki*colNumber+i]) != 0)
+        if (discreteInputData[vecGenes[0]][i] * (discreteInputData[ki][i]) != 0)
           commonCnt++;
       }
       if(commonCnt< floor(cnt * gParameters.Tolerance)) {
@@ -592,7 +597,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
       std::reverse(std::begin(lcs), std::end(lcs));
       backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], lcs);
       */
-      getGenesFullLCS(&discreteInputData[vecGenes[0]*colNumber],&discreteInputData[ki*colNumber],reveTag,lcsTags[vecGenes[1]],colNumber, true);
+      getGenesFullLCS(discreteInputData[vecGenes[0]].data(),discreteInputData[ki].data(),reveTag,lcsTags[vecGenes[1]],colNumber, true);
       m_ct = 0;
       for (auto i=0; i< colNumber; i++) {
         if (colcand[i] && reveTag[i]!=0)

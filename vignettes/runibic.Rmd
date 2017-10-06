@@ -48,7 +48,9 @@ library(runibic)
 library(biclust)
 data(BicatYeast)
 input=BicatYeast[1:20,1:20]
-biclust(method=BCUnibic(),input)
+res = biclust(method=BCUnibic(),input)
+drawHeatmap(input, res, 1)
+parallelCoordinates(input,res,1)
 ```
 
 ## Example

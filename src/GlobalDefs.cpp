@@ -66,7 +66,7 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 
 
 //lcsTags is vector<vector<int>>
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, Params* params,short *lcsLength, char** lcsTags, vector<int> *inputData) {
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, Params* params,short *lcsLength, char** lcsTags, vector<vector<int>> *inputData) {
   int rowNum = gParameters.RowNumber;
   int colNum = gParameters.ColNumber;
   int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
@@ -89,9 +89,8 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
   //PO: no need for this code?
   //PO: No need to initialize lcsTags. The vector is empty. lcsLength is 0.
   /*cut-from*/
-
-  g1 = &((*inputData)[t0*colNum]);
-  g2 = &((*inputData)[t1*colNum]);
+  g1 = (*inputData)[t0].data();
+  g2 = (*inputData)[t1].data();
   for(auto i=0;i<rowNum;i++) {
     lcsLength[i]=0;
     for(auto j=0;j<colNum;j++)
@@ -120,7 +119,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
 
   //PO: This should be modified to:
   //PO: lcsLength=backtrackLCS(g1, ??? ).size()
-    lcsLength[j]= getGenesFullLCS(g1,&(*inputData)[j*colNum],lcsTags[j],lcsTags[t1],colNum); 
+    lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
   }
 
 

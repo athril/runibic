@@ -73,7 +73,7 @@ static const int HEAP_SIZE = 20000000;
 int edge_cmpr(void *a, void *b);
 double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam);
 bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, Params* params, short *lcsLength, char** lcsTags, std::vector<int> *inputData);
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, Params* params, short *lcsLength, char** lcsTags, std::vector<std::vector<int>> *inputData);
 int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0, bool reverse = false);
 void TrackBack(short** pc,short** pb,int nrow,int ncolumn);
 short* getRowData(int index);
