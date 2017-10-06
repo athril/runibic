@@ -107,7 +107,7 @@ runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 
 
 #' Parallel row-based biclustering algorithm for analysis of gene expression data in R
-#' @param x numeric matrix
+#' @param x numeric matrix or SummarizedExperiment
 #' @param t consistency level of the block (0.5-1.0].
 #' @param q a double value for quantile discretization
 #' @param f filtering overlapping blocks, default 1(do not remove any blocks)
@@ -120,9 +120,34 @@ runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 #' A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
 #' runibic(A)
 runibic <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
+  if(inherits(x,"SummarizedExperiment")){
+    return (runibic_se(x,t,q,f,nbic,div))
+  }
   runibic_params(t,q,f,nbic,div)
   x_d <- discretize(x)
   return(runibic_d(x_d, t, q, f, nbic, div))
 }
 
+#' Parallel row-based biclustering algorithm for analysis of gene expression data in R
+#' @param x SummarizedExperiment
+#' @param t consistency level of the block (0.5-1.0].
+#' @param q a double value for quantile discretization
+#' @param f filtering overlapping blocks, default 1(do not remove any blocks)
+#' @param nbic maximum number of biclusters in output
+#' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
+#' @return List of Biclust objects with detected bicluster for each result from every assay within input
+#'
+#' @usage runibic_se(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+#' @examples 
+#' A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
+#' se = SummarizedExperiment(assays=list(counts=A))
+#' runibic_se(se)
+runibic_se <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
+
+  if(!inherits(x,"SummarizedExperiment")) stop("x must be a SummarizedExperiment")
+  runibic_params(t,q,f,nbic,div)
+  x_d <- lapply(assays(x), discretize)
+ 
+  return(lapply(x_d, runibic_d, t, q, f, nbic, div))
+}
 
