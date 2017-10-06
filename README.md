@@ -23,15 +23,30 @@ devtools::install_github("athril/runibic")
 ```
 
 ## Example
+### Gene expression dataset
 This example presents how to use runibic package on gene expression dataset:
 ```r
 library(runibic)
 library(biclust)
 data(BicatYeast)
-input=BicatYeast[1:20,1:20]
-biclust(method=BCUnibic(),input)
+res = biclust(method=BCUnibic(),BicatYeast)
+drawHeatmap(BicatYeast, res, 1)
+parallelCoordinates(BicatYeast,res,1)
 ```
 
+### Summarized experiment
+This example presents how to use runibic package on SummarizedExperiment:
+```r
+library(runibic)
+library(SummarizedExperiment)
+data(airway, package="airway")
+se <- airway[1:20,]
+res<- runibic(se)
+parallelCoordinates(assays(se)[[1]], res[[1]], 2)
+```
+
+### Tutorial
+Please check [runibic tutorial](https://github.com/athril/runibic/tree/master/vignettes/runibic-vignette.R)
 
 ## References
 * [Wang2016] Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.

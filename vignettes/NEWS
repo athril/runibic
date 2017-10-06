@@ -1,3 +1,7 @@
+Version 0.90.1
+Compatibility with SummarizedExperiment.
+Providing documentation and examples.
+
 Version 0.90.0
 Development of the runibic package prototype completed.
 First upload to Bioconductor.

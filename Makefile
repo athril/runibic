@@ -41,7 +41,6 @@ biocheck:
 clean:
 	-rm -f $(PKG_NAME)_*.tar.gz
 	-rm -rf $(PKG_NAME).Rcheck
-	-rm -rf  man
 	-rm -f src/*.o
 	-rm -f src/*.so
 

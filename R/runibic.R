@@ -117,7 +117,7 @@ runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 #'
 #' @usage runibic(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 #' @examples 
-#' A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
+#' A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 #' runibic(A)
 runibic <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
   if(inherits(x,"SummarizedExperiment")){
@@ -139,7 +139,7 @@ runibic <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 #'
 #' @usage runibic_se(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 #' @examples 
-#' A=matrix(replicate(10, rnorm(20)), nrow=10, byrow=TRUE)
+#' A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 #' se = SummarizedExperiment(assays=list(counts=A))
 #' runibic_se(se)
 runibic_se <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
@@ -147,7 +147,6 @@ runibic_se <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
   if(!inherits(x,"SummarizedExperiment")) stop("x must be a SummarizedExperiment")
   runibic_params(t,q,f,nbic,div)
   x_d <- lapply(assays(x), discretize)
- 
   return(lapply(x_d, runibic_d, t, q, f, nbic, div))
 }
 
