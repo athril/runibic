@@ -48,7 +48,7 @@ drawHeatmap(subset, res, 1)
 
 #####################################################################################################
 # The following example presents the usage of runibic with data
-from an example dataset from an RNA-Seq experiment (SummarizedExperiment)
+# from an example dataset from an RNA-Seq experiment (SummarizedExperiment)
 #####################################################################################################
 library(runibic)
 # load airway dataset
