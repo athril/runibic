@@ -38,6 +38,7 @@ parallelCoordinates(BicatYeast,res,1)
 This example presents how to use runibic package on SummarizedExperiment:
 ```r
 library(runibic)
+library(biclust)
 library(SummarizedExperiment)
 data(airway, package="airway")
 se <- airway[1:20,]
