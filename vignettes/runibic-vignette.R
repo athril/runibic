@@ -128,9 +128,11 @@ unisort(A)
 #calculate the length of LCS between each pair of rows
 lcs=calculateLCS(A)
 
-#check the length of the LCS of the second 
+#check the length of the longest common subsequence (LCS between rows 6 and 7 is equal to 10)
 list(a=lcs$a[2], b=lcs$b[2], lclen=lcs$lcslen[2])
 
-#the length of the longest common subsequence between rows 6 and 7 is equal to 10
-
+#discretize a matrix
+B=replicate(10, rnorm(10))
+B
+discretize(B, )
 
