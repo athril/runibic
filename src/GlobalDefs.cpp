@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <omp.h>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <utility>
 #include <iterator>
@@ -24,12 +25,11 @@ int edge_cmpr(void *a, void *b)
 	return 1;
 }
 
-bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum) {
-  int profiles[rowNum];
+bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> const &vecBlk, const int block_id, int rowNum) {
+  
+  vector<int> profiles(rowNum,0);
   int b1,b2,b3; // indexes for searching of first encounter
   b1 = b2 = -1;
-
-  std::fill(profiles, profiles+rowNum,0);
 
   for (auto ind = 0; ind < block_id; ind++) {
     auto result1 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneOne);
@@ -66,64 +66,49 @@ bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const i
 
 
 //lcsTags is vector<vector<int>>
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int> *genes, vector<int> *scores, bool *candidates, const int cand_threshold, int *components, vector<int> *allincluster, long double *pvalues, Params* params,short *lcsLength, char** lcsTags, vector<vector<int>> *inputData) {
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> &genes, std::vector<int> &scores, vector<bool> &candidates, const int cand_threshold, int *components, std::vector<long double> &pvalues, Params* params, std::vector<std::vector<int>> &lcsTags, std::vector<std::vector<int>> *inputData){
+ 
   int rowNum = gParameters.RowNumber;
   int colNum = gParameters.ColNumber;
   int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
   float cnt_ave=0;
   long double pvalue;
+
   int max_cnt, max_i;
   int t0,t1;
-  int *arrRows, *arrRowsB;
 
-  arrRows = new int[rowNum];
-  arrRowsB = new int[rowNum];
-
-  bool *colcand = new bool[colNum];
-  for (auto ind=0; ind< colNum; ind++)
-    colcand[ind] = false;
-  int *g1, *g2;
-  t0=genes->at(0);
-  t1=genes->at(1);
-
-  //PO: no need for this code?
-  //PO: No need to initialize lcsTags. The vector is empty. lcsLength is 0.
-  /*cut-from*/
-  g1 = (*inputData)[t0].data();
-  g2 = (*inputData)[t1].data();
-  for(auto i=0;i<rowNum;i++) {
-    lcsLength[i]=0;
-    for(auto j=0;j<colNum;j++)
-      lcsTags[i][j]=0;
-  }
-  /*cut-to*/
-
-
-
+  
+  t0=genes[0];
+  t1=genes[1];
   /*************************calculate the lcs*********************************/
-
-
   //PO: It seems to be the same as calling 
   //PO: backtrackLCS(g1,g2)
-  lcsLength[t1]=getGenesFullLCS(g1,g2,lcsTags[t1],NULL,colNum); 
-  for(auto i=0;i<colNum;i++) {
-    if(lcsTags[t1][i]!=0) {
-      colcand[i]=TRUE;
-    }
+  lcsTags.clear();
+  lcsTags.resize(rowNum);
+  
+  lcsTags[t1] = getGenesFullLCS((*inputData)[t0],(*inputData)[t1]);
+  set<int> colcand(lcsTags[t1].begin(), lcsTags[t1].end());
+  std::vector<int> g1Common;
+  //lcsLength[t1]=getGenesFullLCS(g1,g2,lcsTags[t1],NULL,colNum); 
+  for (auto i = 0; i < (*inputData)[t0].size() ;i++){
+    auto res = find(lcsTags[t1].begin(), lcsTags[t1].end(), (*inputData)[t0][i]);
+    if(res!=lcsTags[t1].end())
+      g1Common.push_back((*inputData)[t0][i]);
   }
-
+ 
   for(auto j=0;j<rowNum;j++) {
+    std::vector<int> gJ;
     if (j==t1 || j==t0)
       continue;
-
-
-  //PO: This should be modified to:
-  //PO: lcsLength=backtrackLCS(g1, ??? ).size()
-    lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
+    for(auto i=0;i<colNum;i++)
+    {
+      auto res2 = find(lcsTags[t1].begin(), lcsTags[t1].end(), (*inputData)[j][i]);
+      if(res2!=lcsTags[t1].end())
+        gJ.push_back((*inputData)[j][i]);
+    }
+    lcsTags[j] = getGenesFullLCS(g1Common,gJ);
+    //lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
   }
-
-
-
   while (*components < rowNum) {
     max_cnt = -1;
     max_i = -1;
@@ -137,17 +122,12 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
       if (!candidates[i]) {
         continue;
       }
-      //if (gIsList && !sublist[i]) continue;// TODO Check sublist
-      cnt = 0;
-      for (auto j=0; j< colNum; j++) {
-        if (colcand[j] && lcsTags[i][j]!=0){
-          cnt++;
-        }
-          
-      }
+     
+      cnt= count_if(lcsTags[i].begin(), lcsTags[i].end(), [&](int k) { return colcand.find(k) != colcand.end();});
+      
       cnt_all += cnt;
       if (cnt < cand_threshold)
-        candidates[i] = FALSE;
+        candidates[i] = false;
       if (cnt > max_cnt) {
         max_cnt = cnt;
         max_i = i;
@@ -173,128 +153,58 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, vector<int
     }
     int tempScore = 0;
     if (gParameters.IsArea)
-      tempScore = *components*max_cnt;
+      tempScore = (*components)*max_cnt;
     else
       tempScore = min(*components, max_cnt);
     if (tempScore > block->score)
       block->score = tempScore;
     if (pvalue < block->pvalue)
       block->pvalue = pvalue;
-    genes->push_back(max_i);
-    scores->push_back(tempScore);
+    genes.push_back(max_i);
+    scores.push_back(tempScore);
     pvalues[pid++] = pvalue;
 
-    for (auto i=0; i< colNum; i++)
-      if (colcand[i] &&(lcsTags[max_i][i]==0))
-        colcand[i] = FALSE;
+    for (auto it = colcand.begin(); it != colcand.end();){
+      auto res = find(lcsTags[max_i].begin(), lcsTags[max_i].end(), *it);
+      if(res==lcsTags[max_i].end())
+        it = colcand.erase(it);
+      else
+        it++;
+    }
     candidates[max_i] = FALSE;
   }
-  delete[] colcand;
-  delete[] arrRows;
-  delete[] arrRowsB;
 }
 
+std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> const &s2){
 
-
-
-
-
-//int Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) <- computes LCS between 2 pairs
-//Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y)  <- gets exact LCS of 2 pairs: x,y
-//
-// Calling:
-// {lcs_tg,maxvalue} = getGenesFullLCS(s1,s2,_,_._,reverse)
-// should be the same as calling: 
-// backtrackLCS(s1,s2).
-
-int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  int colNum,bool reverse) {
   vector<int> maxRecord;/*record the max value of matrix*/
-  int maxvalue,rank,length1,length2;
-  int *temp1,*temp2;
-  short **C,**B;
-  temp1 = new int[colNum];
-  temp2 = new int[colNum];
+  vector<int> lcsTag;
+  int maxvalue,rank;
+  
+  int **C,**B;
 
-  maxvalue = 0;
-  length1=length2=0;
-  rank = gParameters.Divided;
-
-  for(auto i=0;i<colNum;i++) {
-    temp2[i]=0;
-    temp1[i]=0;
-  }
-
-  /*get the sorted sequence*/
-  for(auto i=1;i<=rank;i++) {
-    for(auto j=0;j<colNum;j++) {
-      if(lcs_seed!=NULL) {
-        if(lcs_seed[j] != 0) {
-          if(s1[j] == i)
-            temp1[length1++]=j+1;
-          /*printf("[j:%d,s2[j]:%d] ",j,s2[j]);*/
-          if(reverse){
-            if(s2[j] == rank-i+1)
-						  temp2[length2++]=j+1;
-          }
-          else{
-            if(s2[j] == i)
-            temp2[length2++]=j+1;
-          }
-          
-        }
-      }
-      else {
-        if(s1[j] == i)
-          temp1[length1++]=j+1;
-        /*printf("[j:%d,s2[j]:%d] ",j,s2[j]);*/
-        if(s2[j] == i)
-          temp2[length2++]=j+1;
-      }
-    }
-  }
-  if(gParameters.Quantile < 0.5) {
-    for(auto i=rank*(-1);i<=-1;i++) {
-      for(auto j=0;j<colNum;j++) {
-        if(lcs_seed!=NULL) {
-          if(lcs_seed[j] != 0) {
-            if(s1[j] == i)
-              temp1[length1++]=j+1;
-            /*printf("[j:%d,s2[j]:%d] ",j,s2[j]);*/
-            if(s2[j] == i)
-              temp2[length2++]=j+1;
-          }
-        }
-        else {
-        if(s1[j] == i)
-          temp1[length1++]=j+1;
-        /*printf("[j:%d,s2[j]:%d] ",j,s2[j]);*/
-        if(s2[j] == i)
-          temp2[length2++]=j+1;
-        }
-      }
-    }
-  }
   /*create matrix for lcs*/
-  C = new short*[length1+1];
-  B = new short*[length1+1];
-  for(auto i=0;i<length1+1;i++) {
-    C[i] = new short[length2+1];
-    B[i] = new short[length2+1];
+  C = new int*[s1.size()+1];
+  B = new int*[s1.size()+1];
+  
+  for(auto i=0;i<s1.size()+1;i++) {
+    C[i] = new int[s2.size()+1];
+    B[i] = new int[s2.size()+1];
   }
   
   /************initial the edge***************/
-  for(auto i=0; i<length1+1; i++) {
+  for(auto i=0; i<s1.size()+1; i++) {
     C[i][0] = 0;
     B[i][0] = 0;
   }
-  for(auto j=0; j<length2+1; j++) {
+  for(auto j=0; j<s2.size()+1; j++) {
     C[0][j] = 0;
-    B[0][j] = 0;
+    B[0][j] = 0; 
   }
   /************DP*****************************/
-  for(auto i=1; i<length1+1; i++) {
-    for(auto j=1; j<length2+1; j++) {
-      if(temp1[i-1] == temp2[j-1]) {
+  for(auto i=1; i<s1.size()+1; i++) {
+    for(auto j=1; j<s2.size()+1; j++) {
+      if(s1[i-1] == s2[j-1]) {
         C[i][j] = C[i-1][j-1] + 1;
         B[i][j] = 1;
       }
@@ -308,45 +218,43 @@ int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg ,char *lcs_seed,  
       }
     }
   }
-  maxvalue = C[length1][length2];
-  for (auto j=1;j<length2+1;j++) {
-    if (C[length1][j] == maxvalue)
+  maxvalue = C[s1.size()][s1.size()];
+  
+  for (auto j=1;j<s2.size()+1;j++) {
+    if (C[s1.size()][j] == maxvalue)
       maxRecord.push_back(j);
   }
   /*find all the columns of all LCSs*/
   if(maxRecord.size() > 0) {
+
     for (auto i=maxRecord.size()-1;i>=0;i--) {
-      TrackBack(C,B, length1+1,maxRecord[i]+1);      
+      TrackBack(C,B, s1.size()+1,maxRecord[i]+1);      
       break;
     }
-    if(lcs_tg!=NULL)
-    {
-      for (auto i=1;i<length1+1;i++) {
-        for (auto j=1;j<length2+1;j++) {
+      for (auto i=1;i<s1.size()+1;i++) {
+        for (auto j=1;j<s2.size()+1;j++) {
           if (C[i][j] == -1 && B[i][j]==1) {
-              lcs_tg[temp1[i-1]-1] = 1;
+              lcsTag.push_back(s1[i-1]);
           }
         } //end for j
       } // end for i  
+     // Print the lcs
+     //cout << "LCS of " << X << " and " << Y << " is " << lcs;
     }
-  }
-  
-  delete[] temp1;
-  delete[] temp2;
-  for(auto i=0;i<length1+1;i++) {
+  for(auto i=0;i<s1.size()+1;i++) {
     delete[] C[i];
     delete[] B[i];
   }
   delete[] C;
   delete[] B;
 
-  return maxvalue;
+  return lcsTag;
 }
 
 
 
 /*track back the matrix*/
-void TrackBack(short** pc,short** pb,int nrow,int ncolumn) {
+void TrackBack(int** pc,int** pb,int nrow,int ncolumn) {
   int ntemp;
   if(nrow == 0 || ncolumn == 0)
     return;

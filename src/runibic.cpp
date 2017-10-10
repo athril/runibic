@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <set>
 #include <iterator>
 #include <functional>
 #include "GlobalDefs.h"
@@ -148,7 +149,7 @@ Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x) {
       a.push_back(std::make_pair(x(j,i),i));
     }
 
-    sort(a.begin(), a.end());
+    stable_sort(a.begin(), a.end());
     for (auto  i=0; i<nc; i++) {
       y(j,i)=a[i].second;
     }
@@ -376,9 +377,9 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 
 //' Calculating biclusters from sorted list of LCS scores
 //'
-//' TODO: Make better parameters
 //'
-//' @param discreteInput an integer matrix
+//' @param discreteInput an integer matrix with indices of sorted columns
+//' @param discreteInputValues an integer matrix with values after discretization
 //' @param scores a numeric vector
 //' @param geneOne a numeric vector
 //' @param geneTwo a numeric vector
@@ -387,91 +388,86 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 //' @return a number of found clusters
 //'
 //' @examples
-//' cluster(matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
+//' cluster(matrix(c(0,3,1,2,3,1,2,0,1,3,2,0),nrow=4,byrow=TRUE),matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
+Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discreteInputValues, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
   
-  
+  //Initialize algorithm parameters
   gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
 
-  int block_id = 0;
-  int cnt = 0;
+  //Copy input data to local vector
   vector<vector<int>> discreteInputData(discreteInput.nrow()); 
- 
-  for (int i = 0; i < discreteInput.nrow(); i++) {
-    discreteInputData[i].resize(discreteInput.ncol());
-    for (int j = 0; j < discreteInput.ncol(); j++) discreteInputData[i][j] = (discreteInput(i, j));
+  for (auto it = discreteInputData.begin(); it != discreteInputData.end(); it++) {
+    (*it).reserve(discreteInput.ncol());
+    for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
   }
-  BicBlock** arrBlocks = new BicBlock*[gParameters.SchBlock];
-  for(auto ind =0; ind<gParameters.SchBlock; ind++)
-    arrBlocks[ind] = NULL;
-  BicBlock *currBlock; // bicluster candidate
 
-  vector<int> vecGenes, vecScores, vecBicGenes, vecAllInCluster; // helpful vectors/stacks
+  // vector of found bicluster and current bicluster candidate
+  vector<BicBlock*> arrBlocks;
+  BicBlock *currBlock;
 
-  int components;
+  // helpful vectors/sets
+  vector<int> vecBicGenes; 
+  set<int> vecAllInCluster;
 
-  //Memory allocation
-  int *colsStat = new int[colNumber]; // column statisctics array    
-  long double *pvalues = new long double[rowNumber]; // pvalues array
-
-  bool *candidates = new bool[rowNumber];
-  short *lcsLength = new short[rowNumber];
-  char** lcsTags = new char*[rowNumber];
-
-  for(auto ind = 0; ind < rowNumber; ind++)  {
-    lcsTags[ind] = new char[colNumber];
-  }
+  // matrix of found lcs
+  vector<vector<int>> lcsTags(rowNumber);
 
   //Main loop
   for(auto ind = 0; ind < scores.size(); ind++) {
+
     /* check if both genes already enumerated in previous blocks */
     bool flag = true;
     /* speed up the program if the rows bigger than 200 */
     if (rowNumber > 250) {
-      auto result1 = find(vecAllInCluster.begin(), vecAllInCluster.end(), geneOne(ind));
-      auto result2 = find(vecAllInCluster.begin(), vecAllInCluster.end(), geneTwo(ind));
-
-      if ( result1 != vecAllInCluster.end() && result2 != vecAllInCluster.end())
+      if ( vecAllInCluster.find(geneOne(ind)) != vecAllInCluster.end() && vecAllInCluster.find(geneTwo(ind)) != vecAllInCluster.end())
         flag = false;
     }
     else {
-      flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, block_id, rowNumber);
+      flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, arrBlocks.size(), rowNumber);
     }
     if (!flag)    {
       continue;
     }
-   
       
-    //Init Current block
+    // Init Current block
     currBlock = new BicBlock();
     currBlock->score = min(2, (int)scores(ind));
     currBlock->pvalue = 1;
-    vecGenes.clear();
-    vecScores.clear();
-    //Init vectors/stack for genes and scores
+
+    // vectors with current genes and scores
+    vector<int> vecGenes, vecScores;
+
+    // init the vectors
+    vecGenes.reserve(rowNumber);
+    vecScores.reserve(rowNumber);
     vecGenes.push_back(geneOne(ind));
     vecGenes.push_back(geneTwo(ind));
-
     vecScores.push_back(1);
     vecScores.push_back(currBlock->score);
     
-    /* branch-and-cut condition for seed expansion */
-    int candThreshold = floor(gParameters.ColWidth * gParameters.Tolerance);
+    //set threshold for new candidates for bicluster
+    int candThreshold = static_cast<int>(floor(gParameters.ColWidth * gParameters.Tolerance));
     if (candThreshold < 2) 
       candThreshold = 2;
-    /* maintain a candidate list to avoid looping through all rows */		
-    for (auto j = 0; j < rowNumber; j++) 
-      candidates[j] = true;
-    candidates[(int)geneOne(ind)] = candidates[(int)geneTwo(ind)] = FALSE;
-    components = 2;
-    /* expansion step, generate a bicluster without noise */
-    block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, &vecGenes, &vecScores, candidates, candThreshold, &components, &vecAllInCluster, pvalues, &gParameters, lcsLength, lcsTags, &discreteInputData);
-    /* track back to find the genes by which we get the best score*/       
+
+    // vector for candidate rows and their pvalues	
+    vector<bool> candidates(rowNumber, true);
+    vector<long double> pvalues;
+
+    // init the vectors
+    pvalues.reserve(rowNumber);
+    candidates[(int)geneOne(ind)] = candidates[(int)geneTwo(ind)] = false;
+
+    // initial components before block init
+    int components = 2;
     
-    int  k=0;
+    block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, vecGenes, vecScores, candidates, candThreshold, &components, pvalues, &gParameters, lcsTags, &discreteInputData);
+    
+    // check new components
+    std::size_t  k=0;
     for(k = 0; k < components; k++) {
       if (gParameters.IsPValue)
         if ((pvalues[k] == currBlock->pvalue) &&(k >= 2) &&(vecScores[k]!=vecScores[k+1])) 
@@ -479,206 +475,189 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
       if ((vecScores[k] == currBlock->score)&&(vecScores[k+1]!= currBlock->score)) 
         break;
     }
+     
     components = k + 1;
     if(components > vecGenes.size())
       components = vecGenes.size();    
-    for (auto ki=0; ki < rowNumber; ki++) {
-      candidates[ki] = true;
-    }
-
-    vecGenes.resize(components);    
+    vecGenes.resize(components);       
+  
+    // reinitialize candidates vector for further searching
+    fill(candidates.begin(), candidates.end(), true);
     for (auto ki=0; ki < vecGenes.size() ; ki++) {
-      candidates[vecGenes[ki]] = FALSE;
+      candidates[vecGenes[ki]] = false;
     }
-   // candidates[vecGenes[k]] = FALSE;
     
-    bool *colcand = new bool[colNumber];
-    for(auto ki = 0; ki < colNumber; ki++)
-      colcand[ki] = FALSE;
+    // set for column candidates
+    set<size_t> colcand;
 
-    // get init block 
+    // initialize column threshold
     int threshold = floor(components * 0.7)-1;
     if(threshold <1)
       threshold=1;
-    //get the statistical results of each column produced by seed
-    char *temptag = new char[colNumber];
 
-    for(auto i=0;i<colNumber;i++) {
-      colsStat[i] = 0;
-      temptag[i] = 0;
-    }
+    //vector for column statistics
+    vector<int> colsStat(colNumber,0);
 
-
-
-
-    //PO: is it simply calulating how often a given column appears in the vector<vector<int>> ?
+    //calculate column statistics for current components
     for(auto i=1;i<components;i++) {
-      //PO: backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber])
-      getGenesFullLCS(discreteInputData[vecGenes[0]].data(), discreteInputData[vecGenes[i]].data(),temptag, NULL, colNumber);
-      for(auto j=0;j<colNumber;j++)
-      {      
-        if(temptag[j]!=0)
-          colsStat[j]++;
-        temptag[j]=0;
+      vector<int> temptag = getGenesFullLCS(discreteInputData[vecGenes[0]], discreteInputData[vecGenes[i]]);
+      for(auto jt=temptag.begin();jt!=temptag.end();jt++){      
+          colsStat[*jt]++;
       }
     }
-
-
-
-    cnt = 0;
+    
+    // insert current column candidates
     for(auto i=0;i<colNumber;i++) {
       if (colsStat[i] >= threshold) {
-        colcand[i] = true;
-        cnt++;
+        colcand.insert(i);
       }
     }
-    delete[] temptag;
-    // add some new possible genes
+
+    //--------------------------------------------------------------------------------------------------------------------------------
+    // Add new genes
+
     int m_ct=0;
     bool colChose = true;
+
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
-      //if(!candidates[ki]) //if ((po->IS_list && !sublist[ki]) || !candidates[ki]) TODO Sublist check;
-      //  continue;
-      m_ct=0;
-      for (auto i=0; i< colNumber; i++) {
-        if (colcand[i] && lcsTags[ki][i]!=0) 
-        m_ct++;
-      }
-      if (candidates[ki]&& (m_ct >= floor(cnt * gParameters.Tolerance)-1)) {
+      // count number of occurances of candidates in results of lcs
+      m_ct= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
+      //check if this candidate can be added
+      if (candidates[ki]&& (m_ct >= floor(colcand.size() * gParameters.Tolerance)-1)) {
         int temp;
-        for(temp=0;temp<colNumber;temp++) {
-          if(colcand[temp]) {
-            int tmpcount = colsStat[temp];
-            if(lcsTags[ki][temp]!=0)
-              tmpcount++;
-            if(tmpcount < floor(components * 0.1)-1) {
-              colChose = FALSE;
-              break;
-            }
+        for(auto it=colcand.begin(); it != colcand.end();it++){
+          //calculate column statistics of recent candidate
+          int tmpcount = colsStat[*it];
+          if(find(lcsTags[ki].begin(), lcsTags[ki].end(), *it) != lcsTags[ki].end())
+            tmpcount++;
+          if(tmpcount < floor(components * 0.1)-1) {
+            colChose = false;
+            break;
           }
-        }
+        } 
         if(colChose==true) {
+          //add new gene
           vecGenes.push_back(ki);
           components++;
-          candidates[ki] = FALSE;
-          for(temp=0;temp<colNumber;temp++)
-          {
-            if(lcsTags[ki][temp]!=0 && colcand[ki]) {
-              colsStat[temp]++;
-            }
+          candidates[ki] = false;
+          //update column statistics
+          for(auto it=lcsTags[ki].begin();it!=lcsTags[ki].end();it++){      
+              colsStat[*it]++;
           }
         }
       }
     }
     currBlock->block_rows_pre = components;
-    // add genes that negative regulated to the consensus 
-    char * reveTag;
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+    // Add new genes based on reverse order
+
     for (auto ki = 0; ki < rowNumber; ki++) {
       colChose=true;
-     // if (!candidates[ki]) *always false in our case
-      //  continue;
-      reveTag = new char[colNumber];
-      for(auto i = 0; i < colNumber; i++)
-        reveTag[i] = 0;
+      //vector for result from lcs with reversed input
+      std::vector<int> reveTag;
+
       int commonCnt=0;
       for (auto i=0;i<colNumber;i++) {
-        if (discreteInputData[vecGenes[0]][i] * (discreteInputData[ki][i]) != 0)
+        if (discreteInputValues(vecGenes[0],i) * (discreteInputValues(ki,i)) != 0)
           commonCnt++;
       }
-      if(commonCnt< floor(cnt * gParameters.Tolerance)) {
-        candidates[ki] = FALSE;
+      if(commonCnt< floor(colcand.size() * gParameters.Tolerance)) {
+        candidates[ki] = false;
         continue;
       }
-
-      //PO: I think the following lines should be the same as the following code
-      /*
-      Rcpp::IntegerVector lcs=backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], &discreteInputData[vecGenes[i]*colNumber]);
-      std::reverse(std::begin(lcs), std::end(lcs));
-      backtrackLCS(&discreteInputData[vecGenes[0]*colNumber], lcs);
-      */
-      getGenesFullLCS(discreteInputData[vecGenes[0]].data(),discreteInputData[ki].data(),reveTag,lcsTags[vecGenes[1]],colNumber, true);
-      m_ct = 0;
-      for (auto i=0; i< colNumber; i++) {
-        if (colcand[i] && reveTag[i]!=0)
-          m_ct++;
+    
+      //instersect first lcs input with lcs seed and calculate common vector
+      vector<int> g1Common;  
+      for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
+        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
+        if(res!=lcsTags[vecGenes[1]].end())
+          g1Common.push_back(discreteInputData[vecGenes[0]][i]);
       }
-      if (candidates[ki] && (m_ct >= floor(cnt * gParameters.Tolerance)-1)) {
-     
-        int temp;
-        for(temp=0;temp<colNumber;temp++) {
-          if(colcand[temp]) {
-            int tmpcount = colsStat[temp];
-            if(reveTag[temp]!=0)
-              tmpcount++;
-            if(tmpcount < floor(components * 0.1)-1) {
-              colChose = FALSE;
-              break;
-            }
+      //instersect second lcs input with lcs seed and calculate common vector
+      vector<int> g2Common;
+      for (auto i = 0; i < discreteInputData[ki].size() ;i++){
+        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[ki][i]);
+        if(res!=lcsTags[vecGenes[1]].end())
+          g2Common.push_back(discreteInputData[ki][i]);
+      }
+      //reverse the second input
+      reverse(g2Common.begin(), g2Common.end());
+      //calculate the lcs
+      reveTag = getGenesFullLCS(g1Common, g2Common);
+
+      // count number of occurances of candidates in results of lcs
+      m_ct= count_if(reveTag.begin(), reveTag.end(), [&](int k) { return colcand.find(k) != colcand.end();});
+      //check if this candidate can be added
+      if (candidates[ki] && (m_ct >= floor(colcand.size() * gParameters.Tolerance)-1)) {
+        for(auto it=colcand.begin(); it != colcand.end();it++){
+          //calcualte columns statistics of candidate
+          int tmpcount = colsStat[*it];
+          if(find(reveTag.begin(), reveTag.end(), *it) != reveTag.end())
+            tmpcount++;
+          if(tmpcount < floor(components * 0.1)-1) {
+            colChose = false;
+            break;
           }
-        }
-        if(colChose == true) {
+        } 
+        if(colChose==true) {
+          //add new gene
           vecGenes.push_back(ki);
           components++;
-          candidates[ki] = FALSE;
-          for(temp=0;temp<colNumber;temp++) {
-            if(reveTag[temp]!=0 && colcand[ki]) {
-              colsStat[temp]++;
-            }
+          candidates[ki] = false;
+          //update column statistics
+          for(auto it=reveTag.begin();it!=reveTag.end();it++)
+          {      
+              colsStat[*it]++;
           }
         }
       }
-      delete[] reveTag;
     }
     // save the current cluster
     for (auto ki = 0; ki < currBlock->block_rows_pre; ki++)
       vecBicGenes.push_back(vecGenes[ki]);
-    /* store gene arrays inside block */
-    //currBlock->genes = dsNew(components);
-    // currBlock->conds = dsNew(cols);
 
-    for (auto j = 0; j < colNumber; j++) {
-      if (colcand[j]==true) {
-        currBlock->conds.push_back(j);
-      }
-    }
+    // add conditions to current bicluster
+    for (auto it = colcand.begin(); it!=colcand.end(); it++)
+        currBlock->conds.push_back(*it);
     currBlock->block_cols = currBlock->conds.size();
 
+    // check the minimal requirements for bicluster
     if (currBlock->block_cols < 4 || components < 5){
       delete currBlock;
       continue;      
     }
     currBlock->block_rows = components;
+
+    // update score of current bicluster
     if (gParameters.IsPValue)
       currBlock->score = -(100*log(currBlock->pvalue));
     else
       currBlock->score = currBlock->block_rows * currBlock->block_cols;
 
+    // add genes to current bicluster
     currBlock->genes.clear();    
     for (auto ki=0; ki < components; ki++){
       currBlock->genes.push_back(vecGenes[ki]);
-    }
-     
-
-    for(auto ki = 0; ki < components; ki++) {
+      // update vector with all found genes
       auto result1 = find(vecAllInCluster.begin(), vecAllInCluster.end(), vecGenes[ki]);
       if(result1==vecAllInCluster.end())
-        vecAllInCluster.push_back(vecGenes[ki]);
+        vecAllInCluster.insert(vecGenes[ki]);
     }
-    /*save the current block b to the block list bb so that we can sort the blocks by their score*/
-    arrBlocks[block_id++] = currBlock;
+    // add current block to vector
+    arrBlocks.push_back(currBlock);
 
-    /* reaching the results number limit */
-    if (block_id == gParameters.SchBlock) 
+    // check termination condition 
+    if (arrBlocks.size() == gParameters.SchBlock) 
       break;
-    delete[] colcand;
   }
 
-  // Sorting and postprocessing of biclusters!
-
-  sort(arrBlocks, arrBlocks+block_id, &blockComp);
+  //------------------------------------------------------------------------------------------------------------------------------------
+  // Sorting and postprocessing of biclusters
   
-  int n = min(block_id, gParameters.RptBlock);
+  sort(arrBlocks.begin(), arrBlocks.end(), &blockComp);
+  int n = min(static_cast<int>(arrBlocks.size()), gParameters.RptBlock);
   bool flag;
 
   BicBlock **output = new BicBlock*[n]; // Array with filtered biclusters
@@ -690,7 +669,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
 
   /* the major post-processing here, filter overlapping blocks*/
   int i = 0, j = 0, k=0;
-  while (i < block_id && j < n) {
+  while (i < arrBlocks.size() && j < n) {
     b_ptr = arrBlocks[i];
     cur_rows = b_ptr->block_rows;
     cur_cols = b_ptr->block_cols;
@@ -726,20 +705,9 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores
     }
   }
   List outList = fromBlocks(output, j, rowNumber, colNumber);
-  for(auto ind =0; ind<gParameters.SchBlock; ind++)
-    if(arrBlocks!=NULL)
+  for(auto ind =0; ind<arrBlocks.size(); ind++)
       delete arrBlocks[ind];
-  delete[] arrBlocks;
-  delete[] colsStat;
-  delete[] lcsLength;
-  delete[] candidates;
-  delete[] pvalues;
-  for(auto ind = 0; ind < rowNumber; ind++) {
-    delete[] lcsTags[ind];
-  }
-  delete[] lcsTags;
   delete[] output;
-
 
   return outList;
 }

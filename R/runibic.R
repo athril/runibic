@@ -97,8 +97,9 @@ runibic_d <- function(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 
   MYCALL <- match.call()
 
-  LCSRes = calculateLCS(unisort(x),TRUE)
-  res = cluster(x, LCSRes$lcslen,LCSRes$a,LCSRes$b, nrow(x), ncol(x) )
+  iX = unisort(x)
+  LCSRes = calculateLCS(iX,TRUE)
+  res = cluster(iX,x, LCSRes$lcslen,LCSRes$a,LCSRes$b, nrow(x), ncol(x) )
   return(biclust::BiclustResult(as.list(MYCALL), matrix(unlist(res["RowxNumber"]), ncol = as.numeric(res["Number"]), byrow = FALSE),
                                 matrix(unlist(res["NumberxCol"]), nrow = as.numeric(res["Number"]), byrow = FALSE), as.numeric(res["Number"]),
                                 res["info"]))

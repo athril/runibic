@@ -23,7 +23,7 @@ test_that("Calculating Cluster function from LCS results", {
     scores = c(13, 13, 12, 12, 11, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 4)
     geneOne = c(6, 12, 2, 15, 8, 10, 5, 9, 12, 12, 13, 13, 5, 9, 17, 0, 14, 14, 0, 16, 13, 8, 8, 4, 0, 15, 15, 1, 12, 14, 13, 13, 14, 16, 1, 4, 4, 12, 12)
     geneTwo = c(7, 13, 3, 16, 9, 11, 6, 10, 17, 14, 14, 17, 7, 11, 18, 3, 17, 18, 2, 18, 18, 10, 11, 6, 1, 17, 18, 3, 18, 15, 15, 16, 16, 17, 2, 5, 7, 15, 16)
-
+    b = unisort(A)
     resultRow = matrix(c(0,1,0,
                         0,1,0,
                         0,1,0,
@@ -50,7 +50,7 @@ test_that("Calculating Cluster function from LCS results", {
     resultCol = resultCol != 0
     resultNumber = ncol(resultRow)
     runibic_params(0.85,100,0.25,100,0)
-    L = cluster(A,scores,geneOne,geneTwo, nrow(A),ncol(A))
+    L = cluster(b,A,scores,geneOne,geneTwo, nrow(A),ncol(A))
     expect_that( L, is_a("list"))
     expect_that( L$RowxNumber, equals(resultRow))
     expect_that( L$NumberxCol, equals(resultCol))

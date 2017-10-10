@@ -72,12 +72,12 @@ static const int HEAP_SIZE = 20000000;
 
 int edge_cmpr(void *a, void *b);
 double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam);
-bool check_seed(int score, int geneOne, int geneTwo,  BicBlock** vecBlk, const int block_id, int rowNum);
-void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> *genes, std::vector<int> *scores, bool *candidates, const int cand_threshold, int *components, std::vector<int> *allincluster, long double *pvalues, Params* params, short *lcsLength, char** lcsTags, std::vector<std::vector<int>> *inputData);
-int getGenesFullLCS(const int *s1, const int *s2,char *lcs_tg = NULL,char *lcs_seed = NULL, int colNum = 0, bool reverse = false);
-void TrackBack(short** pc,short** pb,int nrow,int ncolumn);
+bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> const &vecBlk, const int block_id, int rowNum);
+void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vector<int> &genes, std::vector<int> &scores, std::vector<bool> &candidates, const int cand_threshold, int *components, std::vector<long double> &pvalues, Params* params, std::vector<std::vector<int>> &lcsTags, std::vector<std::vector<int>> *inputData);
+std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> const &s2);
+void TrackBack(int** pc,int** pb,int nrow,int ncolumn);
 short* getRowData(int index);
 bool blockComp(BicBlock* lhs, BicBlock* rhs);
 Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
-
+Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y);
 #endif

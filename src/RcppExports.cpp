@@ -78,18 +78,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // cluster
-Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber);
-RcppExport SEXP _runibic_cluster(SEXP discreteInputSEXP, SEXP scoresSEXP, SEXP geneOneSEXP, SEXP geneTwoSEXP, SEXP rowNumberSEXP, SEXP colNumberSEXP) {
+Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discreteInputValues, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber);
+RcppExport SEXP _runibic_cluster(SEXP discreteInputSEXP, SEXP discreteInputValuesSEXP, SEXP scoresSEXP, SEXP geneOneSEXP, SEXP geneTwoSEXP, SEXP rowNumberSEXP, SEXP colNumberSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type discreteInput(discreteInputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type discreteInputValues(discreteInputValuesSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type scores(scoresSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type geneOne(geneOneSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type geneTwo(geneTwoSEXP);
     Rcpp::traits::input_parameter< int >::type rowNumber(rowNumberSEXP);
     Rcpp::traits::input_parameter< int >::type colNumber(colNumberSEXP);
-    rcpp_result_gen = Rcpp::wrap(cluster(discreteInput, scores, geneOne, geneTwo, rowNumber, colNumber));
+    rcpp_result_gen = Rcpp::wrap(cluster(discreteInput, discreteInputValues, scores, geneOne, geneTwo, rowNumber, colNumber));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -101,7 +102,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_runibic_pairwiseLCS", (DL_FUNC) &_runibic_pairwiseLCS, 2},
     {"_runibic_backtrackLCS", (DL_FUNC) &_runibic_backtrackLCS, 2},
     {"_runibic_calculateLCS", (DL_FUNC) &_runibic_calculateLCS, 2},
-    {"_runibic_cluster", (DL_FUNC) &_runibic_cluster, 6},
+    {"_runibic_cluster", (DL_FUNC) &_runibic_cluster, 7},
     {NULL, NULL, 0}
 };
 
