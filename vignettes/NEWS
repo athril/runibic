@@ -1,3 +1,7 @@
+Version 0.99.2
+Improved performance of functions in package.
+Removing some errors and warnings.
+
 Version 0.99.1
 Compatibility with SummarizedExperiment.
 Providing documentation and examples.
@@ -5,3 +9,10 @@ Providing documentation and examples.
 Version 0.99.0
 Development of the runibic package prototype completed.
 First upload to Bioconductor.
+
+Version 0.90.1
+Working version of UniBic algorithm.
+
+
+
+

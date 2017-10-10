@@ -103,9 +103,9 @@ calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
 
 #' Calculating biclusters from sorted list of LCS scores
 #'
-#' TODO: Make better parameters
 #'
-#' @param discreteInput an integer matrix
+#' @param discreteInput an integer matrix with indices of sorted columns
+#' @param discreteInputValues an integer matrix with values after discretization
 #' @param scores a numeric vector
 #' @param geneOne a numeric vector
 #' @param geneTwo a numeric vector
@@ -114,7 +114,7 @@ calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
 #' @return a number of found clusters
 #'
 #' @examples
-#' cluster(matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
+#' cluster(matrix(c(0,3,1,2,3,1,2,0,1,3,2,0),nrow=4,byrow=TRUE),matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
 #'
 #' @export
 cluster <- function(discreteInput, discreteInputValues, scores, geneOne, geneTwo, rowNumber, colNumber) {
