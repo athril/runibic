@@ -78,6 +78,9 @@ std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> co
 void TrackBack(int** pc,int** pb,int nrow,int ncolumn);
 short* getRowData(int index);
 bool blockComp(BicBlock* lhs, BicBlock* rhs);
+void internalPairwiseLCS(std::vector<int> &x, std::vector<int> &y, std::vector<std::vector<int> > &c);
+void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector<triple> &out, bool useFib);
 Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, const int nc);
 Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y);
 #endif
+

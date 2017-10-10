@@ -9,7 +9,6 @@
 #include <iterator>
 #include <functional>
 #include "GlobalDefs.h"
-#include  "fib.h"
 
 using namespace std;
 using namespace Rcpp;
@@ -238,17 +237,6 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
   return lcs;
 }
 
-
-
-bool is_higher(const triple* x, const triple* y) {
-  if (x->lcslen > y->lcslen)
-    return true;
-  if (x->lcslen == y->lcslen)
-    return (x->geneA<y->geneB);
-  return false;
-}
-
-
 //' This function calculates all pairwise LCSes within the array.
 //'
 //' This function computes unique pairwise Longest Common Subsequences within the matrix.
@@ -264,105 +252,41 @@ bool is_higher(const triple* x, const triple* y) {
 // [[Rcpp::export]]
 Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true) {
 
+  //Copy input data to local vector
+  vector<vector<int>> discreteInputData(discreteInput.nrow()); 
+  for (auto it = discreteInputData.begin(); it != discreteInputData.end(); it++) {
+    (*it).reserve(discreteInput.ncol());
+    for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
+  }
+  //calculate the size of output
   int PART = 4;
   int step = discreteInput.nrow()/PART;
   int size = (PART-1)*(step*(step-1)/2);
   int rest = step+(discreteInput.nrow()%PART);
   size+= rest*(rest-1)/2;
-//  cout<< "SIZE: " << size << " REST: " << rest << " ROWS: " << discreteInput.nrow() << " COLS: " << discreteInput.ncol() << endl;
-  triple** triplets = new triple*[size];
-  struct fibheap *heap;
-  heap = fh_makeheap();
-  fh_setcmp(heap, edge_cmpr);
-// TODO: change into parallel version
-// there should be 1-level for loop across all combinations of pairs of rows
-//  #pragma omp parallel for private(a,b,i,j,res) schedule(dynamic)
-//  for ( auto k=0; k<size; k++ ) {
-//    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
-  //triple __cur_min = {0, 0, po->COL_WIDTH};
-  triple __cur_min = {0, 0, gParameters.ColWidth};
-  triple *_cur_min = &__cur_min;
-  triple **cur_min = & _cur_min;
-  int k=0;
-  for(auto p = 0; p < PART; p++){
-    auto endi = (p+1)*step;
-    if(p == PART-1)
-      endi = discreteInput.nrow();
-//    cout << "Within (" << p*step << "," << endi << endl;
-    for (auto i=p*step; i<endi; i++) {
-//      cout << "i: " << i << endl;
-      for (auto j=i+1; j<endi; j++) {
-        IntegerVector a = discreteInput(i,_);
-        IntegerVector b = discreteInput(j,_);
-        IntegerMatrix res=pairwiseLCS(a,b);
-        triplets[k] = new triple;
-        triplets[k]->geneA = i;
-        triplets[k]->geneB = j;
-        triplets[k]->lcslen = res[res.size()-1,res.size()-1];
-       // triplets[k]={i,j,res[res.size()-1,res.size()-1]};
-        if(useFibHeap){
-          if (size < HEAP_SIZE) 
-          {
-            fh_insert(heap, (void *)triplets[k]);
-          }
-          else
-          {
-            if (edge_cmpr(cur_min, triplets[k]) < 0)
-            {
-              /* Remove least value and renew */
-              fh_extractmin(heap);
-              fh_insert(heap, (void *)triplets[k]);
-              /* Keep a memory of the current min */
-              *cur_min = (triple *)fh_min(heap);
-            }
-          }
-        }
-        k++;
-      }
-    }
-  }
-  
-//  cout << "SIZE: " << geneA.size() << " " << size << endl;
 
-//  std::vector<std::size_t> indexes;
-//  for (auto i = 0; i!=size; ++i) { indexes.push_back(i); }
-//    std::sort( indexes.begin(), indexes.end(), [&](const std::size_t &i1, const std::size_t &i2) { return lcslen[i1] <= lcslen[i2]; });
+  vector<triple> out;
+  out.reserve(size);
 
-//  std::sort( striplets.begin(); triplets.end(), is_longer);
-//  std::sort( std::begin(triplets); std::end(triplets), is_longer);
+  internalCalulateLCS(discreteInputData,out, useFibHeap);
+
   Rcpp::IntegerVector geneA(size);
   Rcpp::IntegerVector geneB(size);
   Rcpp::IntegerVector lcslen(size);
-  if(useFibHeap){
 
-    for(int i=size-1; i>=0; i--){
-      triple *res= static_cast<triple *>(fh_extractmin(heap));
-      geneA(i) = res->geneA;
-      geneB(i) = res->geneB;
-      lcslen(i) = res->lcslen;
-    }
-
+  for(auto i = 0; i < out.size(); i++)
+  {
+    geneA(i) = out[i].geneA;
+    geneB(i) = out[i].geneB;
+    lcslen(i) = out[i].lcslen;
   }
-  else  {
-    sort( triplets, triplets+size, &is_higher);
-    for (int i=0; i<size; i++) {
-      geneA(i) = triplets[i]->geneA;
-      geneB(i) = triplets[i]->geneB;
-      lcslen(i) = triplets[i]->lcslen;
-    }
-  }
-    
-
   //return triplets;
 // TODO: sort according to lcslen. The following sorting doesn't work:
 //  std::sort( std::begin(geneA),std::end(geneA), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  std::sort( std::begin(geneB),std::end(geneB), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  std::sort( std::begin(lcslen),std::end(lcslen), [&](const int &i1, const int &i2) { return lcslen[i1] > lcslen[i2]; } );
 //  potential workaround: https://stackoverflow.com/questions/37368787/c-sort-one-vector-based-on-another-one
-  for(int i=0;i <size; i++)
-    delete triplets[i];
-  delete[] triplets;
-  free(heap);
+
   return List::create(
            Named("a") = geneA,
            Named("b") = geneB,

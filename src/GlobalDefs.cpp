@@ -8,6 +8,7 @@
 #include <utility>
 #include <iterator>
 #include "GlobalDefs.h"
+#include  "fib.h"
 
 
 using namespace std;
@@ -23,6 +24,14 @@ int edge_cmpr(void *a, void *b)
 	if (score_a < score_b) return -1;
 	if (score_a == score_b) return 0;
 	return 1;
+}
+
+bool is_higher(const triple* x, const triple* y) {
+  if (x->lcslen > y->lcslen)
+    return true;
+  if (x->lcslen == y->lcslen)
+    return (x->geneA<y->geneB);
+  return false;
 }
 
 bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> const &vecBlk, const int block_id, int rowNum) {
@@ -281,6 +290,108 @@ short* getRowData(int index) {
   return NULL;
 }
 
+void internalPairwiseLCS(std::vector<int> &x, std::vector<int> &y, std::vector<std::vector<int>> &c){
+
+  for (auto i=0; i<x.size()+1; i++) {
+    c[i].resize(y.size()+1);
+    c[i][0]=0;
+  }
+
+  for (auto j=0; j<y.size()+1; j++) {
+    c[0][j]=0;
+  }
+  for(auto i=1; i<x.size()+1; i++) {
+    for(auto j=1; j<y.size()+1; j++) {
+      if(x[i-1] == y[j-1]) {
+        c[i][j] = c[i-1][j-1] + 1;
+      }
+      else {
+        c[i][j] = std::max(c[i][j-1],c[i-1][j]);
+      }
+    }
+  }
+}
+void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector<triple> &out, bool useFib){
+
+  int PART = 4;
+  int step = inputMatrix.size()/PART;
+  int size = (PART-1)*(step*(step-1)/2);
+  int rest = step+(inputMatrix.size()%PART);
+  size+= rest*(rest-1)/2;
+  triple** triplets = new triple*[size];
+  struct fibheap *heap;
+  heap = fh_makeheap();
+  fh_setcmp(heap, edge_cmpr);
+ 
+// TODO: change into parallel version
+// there should be 1-level for loop across all combinations of pairs of rows
+//  #pragma omp parallel for private(a,b,i,j,res) schedule(dynamic)
+//  for ( auto k=0; k<size; k++ ) {
+//    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
+  //triple __cur_min = {0, 0, po->COL_WIDTH};
+  triple __cur_min = {0, 0, gParameters.ColWidth};
+  triple *_cur_min = &__cur_min;
+  triple **cur_min = & _cur_min;
+  int k=0;
+  for(auto p = 0; p < PART; p++){
+    auto endi = (p+1)*step;
+    if(p == PART-1)
+      endi = inputMatrix.size();
+//    cout << "Within (" << p*step << "," << endi << endl;
+    for (auto i=p*step; i<endi; i++) {
+//      cout << "i: " << i << endl;
+      for (auto j=i+1; j<endi; j++) {
+        vector<int> a = inputMatrix[i];
+        vector<int> b = inputMatrix[j];
+        vector< vector<int> > res(a.size()+1);
+        internalPairwiseLCS(a,b,res);
+      
+        triplets[k] = new triple;
+        triplets[k]->geneA = i;
+        triplets[k]->geneB = j;
+        triplets[k]->lcslen = res[res.size()-1][res.size()-1];
+       // triplets[k]={i,j,res[res.size()-1,res.size()-1]};
+        if(useFib){
+          if (size < HEAP_SIZE) 
+          {
+            fh_insert(heap, (void *)triplets[k]);
+          }
+          else
+          {
+            if (edge_cmpr(cur_min, triplets[k]) < 0)
+            {
+              /* Remove least value and renew */
+              fh_extractmin(heap);
+              fh_insert(heap, (void *)triplets[k]);
+              /* Keep a memory of the current min */
+              *cur_min = (triple *)fh_min(heap);
+            }
+          }
+        }
+        k++;
+      }
+    }
+  }
+
+  if(useFib){
+
+    for(int i=size-1; i>=0; i--){
+      triple *res= static_cast<triple *>(fh_extractmin(heap));
+      out.push_back(*res);
+    }
+    reverse(out.begin(), out.end());
+  }
+  else  {
+    sort( triplets, triplets+size, &is_higher);
+    for (int i=0; i<size; i++) {
+      out.push_back(*(triplets[i]));
+    }
+  }
+  for(int i=0;i <size; i++)
+    delete triplets[i];
+  delete[] triplets;
+  free(heap);
+}
 
 bool blockComp(BicBlock*lhs, BicBlock* rhs) {
 /* compare function for qsort, descending by score */ 
