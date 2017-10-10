@@ -38,15 +38,14 @@ setClass(Class = "BCUnibicD", contains = "BiclustMethod",
 
 #' BCUnibicD
 #'
-#' \code{BCUnibicD} performs Unibic for a discret matrix.
+#' \code{BCUnibicD} performs Unibic for a discrete matrix.
 #'
 #' @aliases UnibicD biclust,matrix,BCUnibicD-method
 #'
 #' @describeIn Unibic biclustering algrorithm for discrete data
 #'
 #' @examples
-#' data(BicatYeast)
-#' disc<-discretize(BicatYeast[1:20,1:20])
+#' BCUnibicD(discretize(replicate(10, rnorm(20))))
 #' @usage \S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 BCUnibicD <- function(x=NULL, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 
@@ -72,7 +71,7 @@ BCUnibicD <- function(x=NULL, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
 #' @param method Unibic method for continuous data
 #'
 #' @examples
-#' data(BicatYeast)
+#' BCUnibic(replicate(10, rnorm(20)))
 #' @usage \S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 BCUnibic <- function(x=NULL, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 

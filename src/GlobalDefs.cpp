@@ -17,13 +17,13 @@ extern Params gParameters;
 
 int edge_cmpr(void *a, void *b)
 {
-	float score_a, score_b;
-	score_a = ((triple *)a)->lcslen;
-	score_b = ((triple *)b)->lcslen;
+  float score_a, score_b;
+  score_a = ((triple *)a)->lcslen;
+  score_b = ((triple *)b)->lcslen;
 
-	if (score_a < score_b) return -1;
-	if (score_a == score_b) return 0;
-	return 1;
+  if (score_a < score_b) return -1;
+  if (score_a == score_b) return 0;
+  return 1;
 }
 
 bool is_higher(const triple* x, const triple* y) {
@@ -35,7 +35,6 @@ bool is_higher(const triple* x, const triple* y) {
 }
 
 bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> const &vecBlk, const int block_id, int rowNum) {
-  
   vector<int> profiles(rowNum,0);
   int b1,b2,b3; // indexes for searching of first encounter
   b1 = b2 = -1;
@@ -46,7 +45,6 @@ bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> con
     if ( result1 != vecBlk[ind]->genes.end()  && result2 != vecBlk[ind]->genes.end() ){
       return FALSE;
     }
-      
     if (result1 != vecBlk[ind]->genes.end() && b1 == -1) {
       b1 = ind;
     }
@@ -131,9 +129,9 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
       if (!candidates[i]) {
         continue;
       }
-     
+
       cnt= count_if(lcsTags[i].begin(), lcsTags[i].end(), [&](int k) { return colcand.find(k) != colcand.end();});
-      
+
       cnt_all += cnt;
       if (cnt < cand_threshold)
         candidates[i] = false;

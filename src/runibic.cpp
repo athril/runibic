@@ -89,7 +89,7 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
       double partTwo = calculateQuantile(rowData,x.ncol(),gParameters.Quantile);
       double partThree = calculateQuantile(rowData, x.ncol(), 0.5);
       double upperLimit, lowerLimit;
-      
+
       if((partOne-partThree) >= (partThree - partTwo)){
         upperLimit = 2*partThree - partTwo;
         lowerLimit = partTwo;
@@ -98,8 +98,8 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
         upperLimit = partOne;
         lowerLimit = 2*partThree - partOne;
       }
-      NumericVector biggerPart, lowerPart;
-      biggerPart = rowData[rowData > upperLimit];
+      NumericVector upperPart, lowerPart;
+      upperPart = rowData[rowData > upperLimit];
       lowerPart = rowData[rowData < lowerLimit];
       for(auto iCol = 0; iCol < x.ncol(); iCol++){
         double dSpace = 1.0 / gParameters.Divided;
@@ -108,7 +108,7 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
             y(iRow,iCol) = -ind-1;
             break;
           }
-          if(biggerPart.size() > 0 && x(iRow,iCol) >= calculateQuantile(biggerPart, biggerPart.size(), 1.0 - dSpace * (ind+1))){
+          if(upperPart.size() > 0 && x(iRow,iCol) >= calculateQuantile(upperPart, upperPart.size(), 1.0 - dSpace * (ind+1))){
             y(iRow,iCol) = ind+1;
             break;
           }
@@ -216,7 +216,6 @@ Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 //' @export
 // [[Rcpp::export]]
 Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
-//Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerMatrix c, Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
   Rcpp::IntegerMatrix c = pairwiseLCS(x,y);
   auto index=c(c.nrow()-1,c.ncol()-1);
   auto i=x.size(), j=y.size();
@@ -253,7 +252,7 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true) {
 
   //Copy input data to local vector
-  vector<vector<int>> discreteInputData(discreteInput.nrow()); 
+  vector<vector<int>> discreteInputData(discreteInput.nrow());
   for (auto it = discreteInputData.begin(); it != discreteInputData.end(); it++) {
     (*it).reserve(discreteInput.ncol());
     for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
@@ -317,7 +316,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 //' @export
 // [[Rcpp::export]]
 Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discreteInputValues, Rcpp::IntegerVector scores, Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
-  
+
   //Initialize algorithm parameters
   gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
 
@@ -333,7 +332,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
   BicBlock *currBlock;
 
   // helpful vectors/sets
-  vector<int> vecBicGenes; 
+  vector<int> vecBicGenes;
   set<int> vecAllInCluster;
 
   // matrix of found lcs
@@ -371,7 +370,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     vecGenes.push_back(geneTwo(ind));
     vecScores.push_back(1);
     vecScores.push_back(currBlock->score);
-    
+
     //set threshold for new candidates for bicluster
     int candThreshold = static_cast<int>(floor(gParameters.ColWidth * gParameters.Tolerance));
     if (candThreshold < 2) 
@@ -387,9 +386,9 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
     // initial components before block init
     int components = 2;
-    
+
     block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, vecGenes, vecScores, candidates, candThreshold, &components, pvalues, &gParameters, lcsTags, &discreteInputData);
-    
+
     // check new components
     std::size_t  k=0;
     for(k = 0; k < components; k++) {
@@ -399,18 +398,18 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       if ((vecScores[k] == currBlock->score)&&(vecScores[k+1]!= currBlock->score)) 
         break;
     }
-     
+ 
     components = k + 1;
     if(components > vecGenes.size())
-      components = vecGenes.size();    
-    vecGenes.resize(components);       
-  
+      components = vecGenes.size();
+    vecGenes.resize(components);
+
     // reinitialize candidates vector for further searching
     fill(candidates.begin(), candidates.end(), true);
     for (auto ki=0; ki < vecGenes.size() ; ki++) {
       candidates[vecGenes[ki]] = false;
     }
-    
+
     // set for column candidates
     set<size_t> colcand;
 
@@ -429,7 +428,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
           colsStat[*jt]++;
       }
     }
-    
+
     // insert current column candidates
     for(auto i=0;i<colNumber;i++) {
       if (colsStat[i] >= threshold) {
@@ -491,7 +490,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
         candidates[ki] = false;
         continue;
       }
-    
+
       //instersect first lcs input with lcs seed and calculate common vector
       vector<int> g1Common;  
       for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
@@ -524,7 +523,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
             colChose = false;
             break;
           }
-        } 
+        }
         if(colChose==true) {
           //add new gene
           vecGenes.push_back(ki);
@@ -579,7 +578,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
   //------------------------------------------------------------------------------------------------------------------------------------
   // Sorting and postprocessing of biclusters
-  
+
   sort(arrBlocks.begin(), arrBlocks.end(), &blockComp);
   int n = min(static_cast<int>(arrBlocks.size()), gParameters.RptBlock);
   bool flag;
