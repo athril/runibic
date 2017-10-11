@@ -99,7 +99,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
  
   int rowNum = gParameters.RowNumber;
   int colNum = gParameters.ColNumber;
-  int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
+  int cnt_all=0, pid=0,row_all = rowNum;
   float cnt_ave=0;
   long double pvalue;
 
@@ -124,9 +124,14 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     if(res!=lcsTags[t1].end())
       g1Common.push_back((*inputData)[t0][i]);
   }
- 
+
+  int max=omp_get_max_threads();
+  omp_set_num_threads(max);
+
+
+  std::vector<int> gJ;  
+  #pragma omp parallel for default(shared) private(gJ)
   for(auto j=0;j<rowNum;j++) {
-    std::vector<int> gJ;
     if (j==t1 || j==t0)
       continue;
     for(auto i=0;i<colNum;i++)
@@ -137,6 +142,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     }
     lcsTags[j] = getGenesFullLCS(g1Common,gJ);
     //lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
+    gJ.clear();
   }
   while (*components < rowNum) {
     max_cnt = -1;
@@ -147,7 +153,10 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     /******************************************************/
     /*add a function of controling the bicluster by pvalue*/
     /******************************************************/
+
+   // #pragma omp parallel for reduction(+: cnt_all) reduction(max : max_cnt, max_i)   
     for (auto i=0; i< rowNum; i++) {
+      int cnt = 0;
       if (!candidates[i]) {
         continue;
       }
