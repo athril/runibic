@@ -421,6 +421,8 @@ bool blockComp(BicBlock*lhs, BicBlock* rhs) {
 double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam)
 {
   double delta = (size-1)*qParam;
+  if(delta < 0)
+    delta = 0;
   int i = floor(delta);
   delta=delta-i;
   if(i < size - 1)
