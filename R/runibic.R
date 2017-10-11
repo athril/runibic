@@ -5,6 +5,7 @@
 #' @useDynLib runibic
 #' @exportPattern "^[[:alpha:]]+"
 #' @importFrom Rcpp evalCpp
+#' @import testthat
 #' @importFrom biclust biclust bicluster
 NULL
 
