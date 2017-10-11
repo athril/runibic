@@ -1,3 +1,6 @@
+Version 0.99.5
+Fixing discretize() function bug.
+
 Version 0.99.2
 Improved performance of functions in package.
 Removing some errors and warnings.

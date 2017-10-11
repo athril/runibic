@@ -1,11 +1,11 @@
 #' Parallel row-based biclustering algorithm for analysis of gene expression data in R
 #' @docType package
-#' @author Patryk Orzechowski
+#' @author Patryk Orzechowski, Artur Pańszczyk
 #' @name runibic
 #' @useDynLib runibic
-#' @import Rcpp biclust testthat
-#' @importFrom Rcpp evalCpp
 #' @exportPattern "^[[:alpha:]]+"
+#' @importFrom Rcpp evalCpp
+#' @importFrom biclust biclust bicluster
 NULL
 
 
