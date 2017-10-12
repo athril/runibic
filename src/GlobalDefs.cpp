@@ -99,7 +99,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
  
   int rowNum = gParameters.RowNumber;
   int colNum = gParameters.ColNumber;
-  int cnt_all=0, pid=0,row_all = rowNum;
+  int cnt = 0, cnt_all=0, pid=0,row_all = rowNum;
   float cnt_ave=0;
   long double pvalue;
 
@@ -124,14 +124,9 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     if(res!=lcsTags[t1].end())
       g1Common.push_back((*inputData)[t0][i]);
   }
-
-  int max=omp_get_max_threads();
-  omp_set_num_threads(max);
-
-
-  std::vector<int> gJ;  
-  #pragma omp parallel for default(shared) private(gJ)
+ 
   for(auto j=0;j<rowNum;j++) {
+    std::vector<int> gJ;
     if (j==t1 || j==t0)
       continue;
     for(auto i=0;i<colNum;i++)
@@ -142,7 +137,6 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     }
     lcsTags[j] = getGenesFullLCS(g1Common,gJ);
     //lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
-    gJ.clear();
   }
   while (*components < rowNum) {
     max_cnt = -1;
@@ -153,10 +147,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     /******************************************************/
     /*add a function of controling the bicluster by pvalue*/
     /******************************************************/
-
-   // #pragma omp parallel for reduction(+: cnt_all) reduction(max : max_cnt, max_i)   
     for (auto i=0; i< rowNum; i++) {
-      int cnt = 0;
       if (!candidates[i]) {
         continue;
       }
@@ -366,44 +357,46 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
     auto endi = (p+1)*step;
     if(p == PART-1)
       endi = inputMatrix.size();
-//    cout << "Within (" << p*step << "," << endi << endl;
     for (auto i=p*step; i<endi; i++) {
-//      cout << "i: " << i << endl;
       for (auto j=i+1; j<endi; j++) {
-        vector<int> a = inputMatrix[i];
-        vector<int> b = inputMatrix[j];
-        vector< vector<int> > res(a.size()+1);
-        internalPairwiseLCS(a,b,res);
-      
         triplets[k] = new triple;
         triplets[k]->geneA = i;
         triplets[k]->geneB = j;
-        triplets[k]->lcslen = res[res.size()-1][res.size()-1];
-       // triplets[k]={i,j,res[res.size()-1,res.size()-1]};
-        if(useFib){
-          if (size < HEAP_SIZE) 
-          {
-            fh_insert(heap, (void *)triplets[k]);
-          }
-          else
-          {
-            if (edge_cmpr(cur_min, triplets[k]) < 0)
-            {
-              /* Remove least value and renew */
-              fh_extractmin(heap);
-              fh_insert(heap, (void *)triplets[k]);
-              /* Keep a memory of the current min */
-              *cur_min = (triple *)fh_min(heap);
-            }
-          }
-        }
         k++;
+      }
+    }
+  }
+#pragma omp parallel for shared(triplets) schedule(dynamic)
+  for(auto p = 0; p < k; p++){
+    vector<int> a = inputMatrix[triplets[p]->geneA];
+    vector<int> b = inputMatrix[triplets[p]->geneB];
+    vector< vector<int> > res(a.size()+1);
+    internalPairwiseLCS(a,b,res);
+    triplets[p]->lcslen= res[res.size()-1][res.size()-1];
+  }
+
+  for(auto p = 0; p < k; p++){
+    fh_insert(heap, (void *)triplets[p]);
+    if(useFib){
+      if (size < HEAP_SIZE) 
+      {
+        fh_insert(heap, (void *)triplets[p]);
+      }
+      else
+      {
+        if (edge_cmpr(cur_min, triplets[p]) < 0)
+        {
+          /* Remove least value and renew */
+          fh_extractmin(heap);
+          fh_insert(heap, (void *)triplets[p]);
+          /* Keep a memory of the current min */
+          *cur_min = (triple *)fh_min(heap);
+        }
       }
     }
   }
 
   if(useFib){
-
     for(int i=size-1; i>=0; i--){
       triple *res= static_cast<triple *>(fh_extractmin(heap));
       out.push_back(*res);
