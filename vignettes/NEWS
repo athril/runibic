@@ -1,3 +1,6 @@
+Version 0.99.6
+Parallel version using OpenMP.
+
 Version 0.99.5
 Fixing discretize() function bug.
 
