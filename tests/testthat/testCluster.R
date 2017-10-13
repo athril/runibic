@@ -49,7 +49,7 @@ test_that("Calculating Cluster function from LCS results", {
                         1,1,0,1,1,0,1,1,0,1,0,1,0,0,1,1,1,1,1,1), nrow=3, byrow=TRUE)
     resultCol = resultCol != 0
     resultNumber = ncol(resultRow)
-    runibic_params(0.85,100,0.25,100,0)
+    runibic_params(0.85,0.5,0.25,100,0)
     L = cluster(b,A,scores,geneOne,geneTwo, nrow(A),ncol(A))
     expect_that( L, is_a("list"))
     expect_that( L$RowxNumber, equals(resultRow))

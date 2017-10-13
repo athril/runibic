@@ -124,9 +124,13 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
     if(res!=lcsTags[t1].end())
       g1Common.push_back((*inputData)[t0][i]);
   }
- 
+  int max=omp_get_max_threads();
+  omp_set_num_threads(max);
+  
+  
+  std::vector<int> gJ;  
+  #pragma omp parallel for default(shared) private(gJ)
   for(auto j=0;j<rowNum;j++) {
-    std::vector<int> gJ;
     if (j==t1 || j==t0)
       continue;
     for(auto i=0;i<colNum;i++)
@@ -136,6 +140,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
         gJ.push_back((*inputData)[j][i]);
     }
     lcsTags[j] = getGenesFullLCS(g1Common,gJ);
+    gJ.clear();
     //lcsLength[j]= getGenesFullLCS(g1,(*inputData)[j].data(),lcsTags[j],lcsTags[t1],colNum); 
   }
   while (*components < rowNum) {
@@ -375,9 +380,8 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
     triplets[p]->lcslen= res[res.size()-1][res.size()-1];
   }
 
-  for(auto p = 0; p < k; p++){
-    fh_insert(heap, (void *)triplets[p]);
-    if(useFib){
+  if(useFib){
+    for(auto p = 0; p < k; p++){
       if (size < HEAP_SIZE) 
       {
         fh_insert(heap, (void *)triplets[p]);
@@ -394,9 +398,6 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
         }
       }
     }
-  }
-
-  if(useFib){
     for(int i=size-1; i>=0; i--){
       triple *res= static_cast<triple *>(fh_extractmin(heap));
       out.push_back(*res);

@@ -35,7 +35,7 @@ public:
   : IsDiscrete(false)
   , SchBlock(200)
   , Tolerance(0.85)
-  , Quantile(0.5)
+  , Quantile(0)
   , IsCond(false)
   , IsArea(false)
   , RptBlock(100)

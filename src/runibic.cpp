@@ -56,10 +56,10 @@ Params gParameters;
 //' @return NULL (an empty value)
 //'
 //' @examples
-//' runibic_params(0.85,100,1,100,0)
+//' runibic_params(0.85,0,1,100,0)
 //'
 // [[Rcpp::export]]
-void runibic_params(double t = 0.85,double q = 0.5,double f = 1, int nbic = 100,int div = 0)
+void runibic_params(double t = 0.85,double q = 0,double f = 1, int nbic = 100,int div = 0)
 {
   gParameters.Tolerance=t;
   gParameters.Quantile = q;
@@ -349,7 +349,9 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     (*it).reserve(discreteInput.ncol());
     for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
   }
-
+  int max=omp_get_max_threads();
+  omp_set_num_threads(max);
+  
   // vector of found bicluster and current bicluster candidate
   vector<BicBlock*> arrBlocks;
   BicBlock *currBlock;
@@ -444,14 +446,19 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     //vector for column statistics
     vector<int> colsStat(colNumber,0);
 
+
     //calculate column statistics for current components
+    vector<vector<int>> temptag(components);
+    #pragma omp parallel for default(shared)
     for(auto i=1;i<components;i++) {
-      vector<int> temptag = getGenesFullLCS(discreteInputData[vecGenes[0]], discreteInputData[vecGenes[i]]);
-      for(auto jt=temptag.begin();jt!=temptag.end();jt++){      
+      temptag[i] = getGenesFullLCS(discreteInputData[vecGenes[0]], discreteInputData[vecGenes[i]]);
+    }
+    for(auto i=1;i<components;i++) {
+      for(auto jt=temptag[i].begin();jt!=temptag[i].end();jt++){      
           colsStat[*jt]++;
       }
     }
-
+    temptag.clear();
     // insert current column candidates
     for(auto i=0;i<colNumber;i++) {
       if (colsStat[i] >= threshold) {
@@ -462,15 +469,19 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     //--------------------------------------------------------------------------------------------------------------------------------
     // Add new genes
 
-    int m_ct=0;
     bool colChose = true;
+    vector<int> m_ct(rowNumber);
+
+    // count number of occurances of candidates in results of lcs
+    #pragma omp parallel for default(shared)
+    for(auto ki=0;ki < rowNumber;ki++) {
+      m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
+    }
 
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
-      // count number of occurances of candidates in results of lcs
-      m_ct= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
       //check if this candidate can be added
-      if (candidates[ki]&& (m_ct >= floor(colcand.size() * gParameters.Tolerance)-1)) {
+      if (candidates[ki]&& (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
         int temp;
         for(auto it=colcand.begin(); it != colcand.end();it++){
           //calculate column statistics of recent candidate
@@ -499,11 +510,37 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     //------------------------------------------------------------------------------------------------------------------------------------------------
     // Add new genes based on reverse order
 
+     //instersect first lcs input with lcs seed and calculate common vector
+     vector<int> g1Common;  
+     for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
+       auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
+       if(res!=lcsTags[vecGenes[1]].end())
+         g1Common.push_back(discreteInputData[vecGenes[0]][i]);
+     }
+
+     vector<int> g2Common;
+     vector<vector<int>> reveTag(rowNumber);
+     #pragma omp parallel for default(shared) private(g2Common)
+     for (auto ki = 0; ki < rowNumber; ki++) {
+        //instersect second lcs input with lcs seed and calculate common vector
+      for (auto i = 0; i < discreteInputData[ki].size() ;i++){
+        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[ki][i]);
+        if(res!=lcsTags[vecGenes[1]].end())
+          g2Common.push_back(discreteInputData[ki][i]);
+      }
+      //reverse the second input
+      reverse(g2Common.begin(), g2Common.end());
+      //calculate the lcs
+      reveTag[ki] = getGenesFullLCS(g1Common, g2Common);
+      g2Common.clear();
+      // count number of occurances of candidates in results of lcs
+      m_ct[ki]= count_if(reveTag[ki].begin(), reveTag[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
+     }
+    
+
     for (auto ki = 0; ki < rowNumber; ki++) {
       colChose=true;
       //vector for result from lcs with reversed input
-      std::vector<int> reveTag;
-
       int commonCnt=0;
       for (auto i=0;i<colNumber;i++) {
         if (discreteInputValues(vecGenes[0],i) * (discreteInputValues(ki,i)) != 0)
@@ -513,34 +550,12 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
         candidates[ki] = false;
         continue;
       }
-
-      //instersect first lcs input with lcs seed and calculate common vector
-      vector<int> g1Common;  
-      for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
-        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
-        if(res!=lcsTags[vecGenes[1]].end())
-          g1Common.push_back(discreteInputData[vecGenes[0]][i]);
-      }
-      //instersect second lcs input with lcs seed and calculate common vector
-      vector<int> g2Common;
-      for (auto i = 0; i < discreteInputData[ki].size() ;i++){
-        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[ki][i]);
-        if(res!=lcsTags[vecGenes[1]].end())
-          g2Common.push_back(discreteInputData[ki][i]);
-      }
-      //reverse the second input
-      reverse(g2Common.begin(), g2Common.end());
-      //calculate the lcs
-      reveTag = getGenesFullLCS(g1Common, g2Common);
-
-      // count number of occurances of candidates in results of lcs
-      m_ct= count_if(reveTag.begin(), reveTag.end(), [&](int k) { return colcand.find(k) != colcand.end();});
       //check if this candidate can be added
-      if (candidates[ki] && (m_ct >= floor(colcand.size() * gParameters.Tolerance)-1)) {
+      if (candidates[ki] && (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
         for(auto it=colcand.begin(); it != colcand.end();it++){
           //calcualte columns statistics of candidate
           int tmpcount = colsStat[*it];
-          if(find(reveTag.begin(), reveTag.end(), *it) != reveTag.end())
+          if(find(reveTag[ki].begin(), reveTag[ki].end(), *it) != reveTag[ki].end())
             tmpcount++;
           if(tmpcount < floor(components * 0.1)-1) {
             colChose = false;
@@ -553,7 +568,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
           components++;
           candidates[ki] = false;
           //update column statistics
-          for(auto it=reveTag.begin();it!=reveTag.end();it++)
+          for(auto it=reveTag[ki].begin();it!=reveTag[ki].end();it++)
           {      
               colsStat[*it]++;
           }
