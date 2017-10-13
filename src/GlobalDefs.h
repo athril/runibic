@@ -70,7 +70,12 @@ public:
         Divided = colNum;
       }
     }
-    
+    if(Quantile == 0){
+      if(rowNum > 2000)
+        Quantile = ((int)(15.0/(colNum*1.0)*100+0.5))/100.0;
+      else
+        Quantile = 0.5;
+    }
   }
 };
 /* biclustering block */
