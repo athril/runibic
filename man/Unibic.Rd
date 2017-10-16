@@ -9,9 +9,9 @@
 \alias{biclust,matrix,BCUnibic-method}
 \title{BCUnibicD}
 \usage{
-\S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+\S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 
-\S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+\S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 }
 \arguments{
 \item{x}{numeric matrix}

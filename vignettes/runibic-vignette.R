@@ -29,14 +29,14 @@ parallelCoordinates(test,res,4)
 #####################################################################################################
 # This example shows how to use runibic on GDS dataset
 #####################################################################################################
-library(GEOquery)
-library(affy)
+#library(GEOquery)
+#library(affy)
 # download dataset with Rat peripheral and brain regions from Gene Omnibus
-gse <- getGEO("GDS589", GSEMatrix = TRUE)
+gse <- GEOquery::getGEO("GDS589", GSEMatrix = TRUE)
 
 #convert dataset to ExpressionSet
-eset <- GDS2eSet(gds)
-subset <-exprs(eset)[1:100,]
+eset <- affy::GDS2eSet(gds)
+subset <-affy::exprs(eset)[1:100,]
 
 #perform analysis on first 100 of genes
 res <- runibic(subset)
@@ -79,14 +79,14 @@ data(BicatYeast)
 library(QUBIC)
 
 # perform biclustering using CC, Bimax, Qubic, Plaid and Unibic
-resCC <- biclust(BicatYeast, method = BCCC())
-resBi <- biclust(BicatYeast, method = BCBimax())
-resQub <- biclust(BicatYeast, method = BCQU())
-resPlaid <- biclust(BicatYeast, method = BCPlaid())
-resUni <- biclust(BicatYeast, method = BCUnibic())
+resCC <- biclust::biclust(BicatYeast, method = BCCC())
+resBi <- biclust::biclust(BicatYeast, method = BCBimax())
+resQub <- biclust::biclust(BicatYeast, method = BCQU())
+resPlaid <- biclust::biclust(BicatYeast, method = BCPlaid())
+resUni <- biclust::biclust(BicatYeast, method = BCUnibic())
 
 # compare the results
-showinfo(BicatYeast,c(resCC, resBi, resPlaid, resQub, resUni))
+QUBIC::showinfo(BicatYeast,c(resCC, resBi, resPlaid, resQub, resUni))
 
 
 

@@ -4,7 +4,7 @@
 \alias{runibic_params}
 \title{Set the parameters}
 \usage{
-runibic_params(t = 0.85, q = 0.5, f = 1, nbic = 100L, div = 0L)
+runibic_params(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L)
 }
 \arguments{
 \item{t}{consistency level of the block (0.5-1.0]}
@@ -24,6 +24,6 @@ NULL (an empty value)
 Runibic function for setting parameters
 }
 \examples{
-runibic_params(0.85,100,1,100,0)
+runibic_params(0.85,0,1,100,0)
 
 }

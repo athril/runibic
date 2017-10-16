@@ -4,7 +4,7 @@
 \alias{runibic_d}
 \title{Parallel row-based biclustering algorithm for analysis of gene expression data in R}
 \usage{
-runibic_d(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+runibic_d(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 }
 \arguments{
 \item{x}{integer matrix}

@@ -13,9 +13,9 @@
 #' @return NULL (an empty value)
 #'
 #' @examples
-#' runibic_params(0.85,100,1,100,0)
+#' runibic_params(0.85,0,1,100,0)
 #'
-runibic_params <- function(t = 0.85, q = 0.5, f = 1, nbic = 100L, div = 0L) {
+runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
     invisible(.Call('_runibic_runibic_params', PACKAGE = 'runibic', t, q, f, nbic, div))
 }
 
