@@ -292,9 +292,9 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 
   internalCalulateLCS(discreteInputData,out, useFibHeap);
 
-  Rcpp::IntegerVector geneA(size);
-  Rcpp::IntegerVector geneB(size);
-  Rcpp::IntegerVector lcslen(size);
+  Rcpp::IntegerVector geneA(out.size());
+  Rcpp::IntegerVector geneB(out.size());
+  Rcpp::IntegerVector lcslen(out.size());
 
   for(auto i = 0; i < out.size(); i++)
   {

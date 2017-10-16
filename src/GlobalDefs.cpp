@@ -30,7 +30,8 @@ SOFTWARE.
 #include <utility>
 #include <iterator>
 #include "GlobalDefs.h"
-#include  "fib.h"
+#include "fib.h"
+#include  "fibpriv.h"
 
 
 using namespace std;
@@ -379,10 +380,9 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
     internalPairwiseLCS(a,b,res);
     triplets[p]->lcslen= res[res.size()-1][res.size()-1];
   }
-
   if(useFib){
     for(auto p = 0; p < k; p++){
-      if (size < HEAP_SIZE) 
+      if (heap->fh_n < HEAP_SIZE) 
       {
         fh_insert(heap, (void *)triplets[p]);
       }
@@ -398,7 +398,7 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
         }
       }
     }
-    for(int i=size-1; i>=0; i--){
+    for(int i=heap->fh_n-1; i>=0; i--){
       triple *res= static_cast<triple *>(fh_extractmin(heap));
       out.push_back(*res);
     }
