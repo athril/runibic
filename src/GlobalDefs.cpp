@@ -30,8 +30,8 @@ SOFTWARE.
 #include <utility>
 #include <iterator>
 #include "GlobalDefs.h"
-#include "fib.h"
-#include  "fibpriv.h"
+#include  "fib.h"
+#include "fibpriv.h"
 
 
 using namespace std;
@@ -130,7 +130,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
   
   
   std::vector<int> gJ;  
-  #pragma omp parallel for default(shared) private(gJ)
+  #pragma omp parallel for default(shared) private(gJ) 
   for(auto j=0;j<rowNum;j++) {
     if (j==t1 || j==t0)
       continue;
@@ -380,8 +380,9 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
     internalPairwiseLCS(a,b,res);
     triplets[p]->lcslen= res[res.size()-1][res.size()-1];
   }
-  if(useFib){
-    for(auto p = 0; p < k; p++){
+
+  for(auto p = 0; p < k; p++){
+    if(useFib){
       if (heap->fh_n < HEAP_SIZE) 
       {
         fh_insert(heap, (void *)triplets[p]);
@@ -398,6 +399,9 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
         }
       }
     }
+  }
+
+  if(useFib){
     for(int i=heap->fh_n-1; i>=0; i--){
       triple *res= static_cast<triple *>(fh_extractmin(heap));
       out.push_back(*res);

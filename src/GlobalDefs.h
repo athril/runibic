@@ -35,13 +35,13 @@ public:
   : IsDiscrete(false)
   , SchBlock(200)
   , Tolerance(0.85)
-  , Quantile(0)
+  , Quantile(0.5)
   , IsCond(false)
   , IsArea(false)
   , RptBlock(100)
   , Filter(1)
   , Shuffle(0)
-  , Divided(100)
+  , Divided(0)
   , RowNumber(0)
   , ColNumber(0){};
   int RowNumber;
@@ -70,12 +70,7 @@ public:
         Divided = colNum;
       }
     }
-    if(Quantile == 0){
-      if(rowNum > 2000)
-        Quantile = ((int)(15.0/(colNum*1.0)*100+0.5))/100.0;
-      else
-        Quantile = 0.5;
-    }
+    
   }
 };
 /* biclustering block */

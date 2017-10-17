@@ -351,7 +351,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
   }
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
-  
+
   // vector of found bicluster and current bicluster candidate
   vector<BicBlock*> arrBlocks;
   BicBlock *currBlock;
@@ -471,13 +471,12 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
     bool colChose = true;
     vector<int> m_ct(rowNumber);
-
+    
     // count number of occurances of candidates in results of lcs
     #pragma omp parallel for default(shared)
     for(auto ki=0;ki < rowNumber;ki++) {
       m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
     }
-
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
       //check if this candidate can be added
@@ -510,19 +509,31 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     //------------------------------------------------------------------------------------------------------------------------------------------------
     // Add new genes based on reverse order
 
-     //instersect first lcs input with lcs seed and calculate common vector
-     vector<int> g1Common;  
-     for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
-       auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
-       if(res!=lcsTags[vecGenes[1]].end())
-         g1Common.push_back(discreteInputData[vecGenes[0]][i]);
-     }
-
-     vector<int> g2Common;
-     vector<vector<int>> reveTag(rowNumber);
-     #pragma omp parallel for default(shared) private(g2Common)
-     for (auto ki = 0; ki < rowNumber; ki++) {
-        //instersect second lcs input with lcs seed and calculate common vector
+    vector<int> g1Common;  
+    for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
+      auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
+      if(res!=lcsTags[vecGenes[1]].end())
+        g1Common.push_back(discreteInputData[vecGenes[0]][i]);
+    }
+    #pragma omp parallel for default(shared)
+    for (auto ki = 0; ki < rowNumber; ki++) {
+      //vector for result from lcs with reversed input
+      int commonCnt=0;
+      for (auto i=0;i<colNumber;i++) {
+        if (discreteInputValues(vecGenes[0],i) * (discreteInputValues(ki,i)) != 0)
+          commonCnt++;
+      }
+      if(commonCnt< floor(colcand.size() * gParameters.Tolerance)) {
+        candidates[ki] = false;
+      }     
+    }
+    vector<int> g2Common;
+    vector<vector<int>> reveTag(rowNumber);
+    #pragma omp parallel for default(shared) private(g2Common)
+    for (auto ki = 0; ki < rowNumber; ki++) {
+      if(!candidates[ki])
+        continue;
+       //instersect second lcs input with lcs seed and calculate common vector
       for (auto i = 0; i < discreteInputData[ki].size() ;i++){
         auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[ki][i]);
         if(res!=lcsTags[vecGenes[1]].end())
@@ -535,21 +546,13 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       g2Common.clear();
       // count number of occurances of candidates in results of lcs
       m_ct[ki]= count_if(reveTag[ki].begin(), reveTag[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
-     }
-    
-
+    }
+   
     for (auto ki = 0; ki < rowNumber; ki++) {
       colChose=true;
       //vector for result from lcs with reversed input
-      int commonCnt=0;
-      for (auto i=0;i<colNumber;i++) {
-        if (discreteInputValues(vecGenes[0],i) * (discreteInputValues(ki,i)) != 0)
-          commonCnt++;
-      }
-      if(commonCnt< floor(colcand.size() * gParameters.Tolerance)) {
-        candidates[ki] = false;
+      if(!candidates[ki])
         continue;
-      }
       //check if this candidate can be added
       if (candidates[ki] && (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
         for(auto it=colcand.begin(); it != colcand.end();it++){

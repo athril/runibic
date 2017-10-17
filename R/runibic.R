@@ -47,11 +47,11 @@ setClass(Class = "BCUnibicD", contains = "BiclustMethod",
 #'
 #' @examples
 #' BCUnibicD(discretize(replicate(10, rnorm(20))))
-#' @usage \S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage \S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 BCUnibicD <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 
     return(methods::new("BCUnibicD"))
-  res<- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+  res<- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
   res@Parameters$Call = match.call()
   return (res);
 }
@@ -73,11 +73,11 @@ BCUnibicD <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #'
 #' @examples
 #' BCUnibic(replicate(10, rnorm(20)))
-#' @usage \S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage \S4method{biclust}{matrix,BCUnibic}(x=NULL, method=BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 BCUnibic <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 
     return(methods::new("BCUnibic"))
-  res<- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
+  res<- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
   res@Parameters$Call = match.call()
   return (res);
 }
@@ -92,7 +92,7 @@ BCUnibic <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 #' @return Biclust object with detected biclusters
 #'
-#' @usage runibic_d(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage runibic_d(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 runibic_d <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 
   MYCALL <- match.call()
@@ -116,7 +116,7 @@ runibic_d <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 #' @return Biclust object with detected biclusters
 #'
-#' @usage runibic(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage runibic(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 #' @examples 
 #' A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 #' runibic(A)
@@ -138,7 +138,7 @@ runibic <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 #' @return List of Biclust objects with detected bicluster for each result from every assay within input
 #'
-#' @usage runibic_se(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage runibic_se(x, t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 #' @examples 
 #' A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 #' se = SummarizedExperiment(assays=list(counts=A))
