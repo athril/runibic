@@ -58,26 +58,41 @@ bool is_higher(const triple* x, const triple* y) {
 }
 
 bool check_seed(int score, int geneOne, int geneTwo,  std::vector<BicBlock*> const &vecBlk, const int block_id, int rowNum) {
-  vector<int> profiles(rowNum,0);
+ 
   int b1,b2,b3; // indexes for searching of first encounter
   b1 = b2 = -1;
 
   for (auto ind = 0; ind < block_id; ind++) {
-    auto result1 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneOne);
-    auto result2 = find(vecBlk[ind]->genes.begin(), vecBlk[ind]->genes.end(), geneTwo);
-    if ( result1 != vecBlk[ind]->genes.end()  && result2 != vecBlk[ind]->genes.end() ){
+
+    bool result1 = FALSE;
+    int i;
+    for (i=0; i<vecBlk[ind]->genes.size(); i++){
+      if (vecBlk[ind]->genes.at(i)==geneOne)
+      {
+        result1 = TRUE; break;
+      }
+    }
+    auto result2 = FALSE;
+    for (i=0; i<vecBlk[ind]->genes.size(); i++){
+      if (vecBlk[ind]->genes.at(i)==geneTwo)
+      {
+        result2 = TRUE; break;
+      }
+    }
+    if ( result1 && result2){
       return FALSE;
     }
-    if (result1 != vecBlk[ind]->genes.end() && b1 == -1) {
+    if (result1 && b1 == -1) {
       b1 = ind;
     }
-    if(result2 != vecBlk[ind]->genes.end() && b2 == -1) {
+    if(result2 && b2 == -1) {
       b2 = ind;
     }
   }
   if ( (b1 == -1)||(b2 == -1) )
     return TRUE;
   else {
+    vector<int> profiles(rowNum,0);
     for (auto i = 0; i < vecBlk[b1]->block_rows; i++)
       profiles[vecBlk[b1]->genes.at(i)]++;
     for (auto i = 0; i < vecBlk[b2]->block_rows; i++)
@@ -121,8 +136,8 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
   std::vector<int> g1Common;
   //lcsLength[t1]=getGenesFullLCS(g1,g2,lcsTags[t1],NULL,colNum); 
   for (auto i = 0; i < (*inputData)[t0].size() ;i++){
-    auto res = find(lcsTags[t1].begin(), lcsTags[t1].end(), (*inputData)[t0][i]);
-    if(res!=lcsTags[t1].end())
+    auto res = colcand.find((*inputData)[t0][i]);
+    if(res!=colcand.end())
       g1Common.push_back((*inputData)[t0][i]);
   }
   int max=omp_get_max_threads();
@@ -134,10 +149,10 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
   for(auto j=0;j<rowNum;j++) {
     if (j==t1 || j==t0)
       continue;
-    for(auto i=0;i<colNum;i++)
+    for(auto i=0;i<(*inputData)[j].size();i++)
     {
-      auto res2 = find(lcsTags[t1].begin(), lcsTags[t1].end(), (*inputData)[j][i]);
-      if(res2!=lcsTags[t1].end())
+      auto res2 = colcand.find((*inputData)[j][i]);
+      if(res2!=colcand.end())
         gJ.push_back((*inputData)[j][i]);
     }
     lcsTags[j] = getGenesFullLCS(g1Common,gJ);
@@ -253,7 +268,7 @@ std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> co
       }
     }
   }
-  maxvalue = C[s1.size()][s1.size()];
+  maxvalue = C[s1.size()][s2.size()];
   
   for (auto j=1;j<s2.size()+1;j++) {
     if (C[s1.size()][j] == maxvalue)
@@ -266,13 +281,13 @@ std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> co
       TrackBack(C,B, s1.size()+1,maxRecord[i]+1);      
       break;
     }
-      for (auto i=1;i<s1.size()+1;i++) {
-        for (auto j=1;j<s2.size()+1;j++) {
-          if (C[i][j] == -1 && B[i][j]==1) {
-              lcsTag.push_back(s1[i-1]);
-          }
-        } //end for j
-      } // end for i  
+    for (auto i=1;i<s1.size()+1;i++) {
+      for (auto j=1;j<s2.size()+1;j++) {
+        if (C[i][j] == -1 && B[i][j]==1) {
+            lcsTag.push_back(s1[i-1]);
+        }
+      } //end for j
+    } // end for i  
      // Print the lcs
      //cout << "LCS of " << X << " and " << Y << " is " << lcs;
     }
@@ -378,14 +393,17 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
     vector<int> b = inputMatrix[triplets[p]->geneB];
     vector< vector<int> > res(a.size()+1);
     internalPairwiseLCS(a,b,res);
-    triplets[p]->lcslen= res[res.size()-1][res.size()-1];
+    triplets[p]->lcslen= res[a.size()][b.size()];
   }
   if(useFib){
       for(auto p = 0; p < k; p++){
-              if (heap->fh_n < HEAP_SIZE) 
-      {
-        fh_insert(heap, (void *)triplets[p]);
-      }
+        if (triplets[p]->lcslen < ((*cur_min)->lcslen)){
+          continue;
+        } 
+        if (heap->fh_n < HEAP_SIZE) 
+        {
+          fh_insert(heap, (void *)triplets[p]);
+        }
       else
       {
         if (edge_cmpr(cur_min, triplets[p]) < 0)
@@ -431,5 +449,5 @@ double calculateQuantile(Rcpp::NumericVector vecData, int size, double qParam)
   if(i < size - 1)
     return (1-delta)*vecData(i) + (delta)*vecData(i+1);
   else 
-    return -1;
+    return (1-delta)*vecData(i);
 }

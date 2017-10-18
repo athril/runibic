@@ -106,7 +106,7 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
   else{
     for(auto iRow = 0; iRow < x.nrow(); iRow++){
       NumericVector rowData = x(iRow,_);
-      sort(rowData.begin(), rowData.end());
+      stable_sort(rowData.begin(), rowData.end());
 
       double partOne = calculateQuantile(rowData,x.ncol(),1-gParameters.Quantile);
       double partTwo = calculateQuantile(rowData,x.ncol(),gParameters.Quantile);
@@ -127,7 +127,7 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
       for(auto iCol = 0; iCol < x.ncol(); iCol++){
         double dSpace = 1.0 / gParameters.Divided;
         for(auto ind=0; ind < gParameters.Divided; ind++){
-          if(lowerPart.size() > 0 && x(iRow,iCol) <= calculateQuantile(lowerPart, lowerPart.size(), dSpace * (ind))){
+          if(lowerPart.size() > 0 && x(iRow,iCol) <= calculateQuantile(lowerPart, lowerPart.size(), dSpace * (ind+1))){
             y(iRow,iCol) = -ind-1;
             break;
           }
@@ -155,16 +155,16 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x) {
+Rcpp::IntegerMatrix unisort(Rcpp::IntegerMatrix x) {
   int nr = x.nrow();
   int nc = x.ncol();
-
-  NumericMatrix y(nr,nc);
+  gParameters.InitOptions(nr,nc);
+  IntegerMatrix y(nr,nc);
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
 
 
-  vector< pair<float,int> > a;
+  vector< pair<int,int> > a;
   #pragma omp parallel for private(a)
   for (auto  j=0; j<nr; j++) {
     for (auto  i=0; i<nc; i++) {
@@ -172,6 +172,16 @@ Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x) {
     }
 
     stable_sort(a.begin(), a.end());
+    if(gParameters.Quantile < 0.5){
+      int ind=0;
+      for (auto  i=0; i<nc; i++) {
+        if(a[i].first == 0){
+          ind = i;
+          break;
+        }
+      } 
+      rotate(a.begin(), a.begin()+ind+1,a.end());
+    }
     for (auto  i=0; i<nc; i++) {
       y(j,i)=a[i].second;
     }
@@ -275,16 +285,32 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true) {
 
   //Copy input data to local vector
-  vector<vector<int>> discreteInputData(discreteInput.nrow());
-  for (auto it = discreteInputData.begin(); it != discreteInputData.end(); it++) {
-    (*it).reserve(discreteInput.ncol());
-    for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
+  gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
+
+  Rcpp::IntegerMatrix discreteInputIndex = unisort(discreteInput);
+
+  vector<vector<int>> discreteInputData(discreteInputIndex.nrow());
+
+  for (auto i = 0; i < discreteInputData.size(); i++) {
+    if(gParameters.Quantile < 0.5){
+      //(*it).reserve(discreteInput.ncol());
+      for (auto j = 0; j < discreteInputIndex.ncol(); j++){
+        if(discreteInput(i, discreteInputIndex(i, j))!=0)
+          discreteInputData[i].push_back(discreteInputIndex(i, j));
+      } 
+    }
+    else{
+      discreteInputData[i].reserve(discreteInputIndex.ncol());
+      for (auto j = 0; j < discreteInputIndex.ncol(); j++){
+        discreteInputData[i].push_back(discreteInputIndex(i, j));
+      } 
+    }
   }
   //calculate the size of output
   int PART = 4;
-  int step = discreteInput.nrow()/PART;
+  int step = discreteInputIndex.nrow()/PART;
   int size = (PART-1)*(step*(step-1)/2);
-  int rest = step+(discreteInput.nrow()%PART);
+  int rest = step+(discreteInputIndex.nrow()%PART);
   size+= rest*(rest-1)/2;
 
   vector<triple> out;
@@ -345,9 +371,20 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
   //Copy input data to local vector
   vector<vector<int>> discreteInputData(discreteInput.nrow()); 
-  for (auto it = discreteInputData.begin(); it != discreteInputData.end(); it++) {
-    (*it).reserve(discreteInput.ncol());
-    for (auto j = 0; j < discreteInput.ncol(); j++) (*it).push_back(discreteInput(it - discreteInputData.begin(), j));
+  for (auto i = 0; i < discreteInputData.size(); i++) {
+    if(gParameters.Quantile < 0.5){
+      discreteInputData[i].reserve(discreteInput.ncol());
+      for (auto j = 0; j < discreteInput.ncol(); j++){
+        if(discreteInputValues(i, discreteInput(i, j))!=0)
+          discreteInputData[i].push_back(discreteInput(i, j));
+      } 
+    }
+    else{
+      discreteInputData[i].reserve(discreteInput.ncol());
+      for (auto j = 0; j < discreteInput.ncol(); j++){
+        discreteInputData[i].push_back(discreteInput(i, j));
+      } 
+    }
   }
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
@@ -473,12 +510,10 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     vector<int> m_ct(rowNumber);
     
     // count number of occurances of candidates in results of lcs
-    #pragma omp parallel for default(shared)
-    for(auto ki=0;ki < rowNumber;ki++) {
-      m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
-    }
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
+      if(candidates[ki])
+        m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
       //check if this candidate can be added
       if (candidates[ki]&& (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
         int temp;
@@ -510,9 +545,10 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     // Add new genes based on reverse order
 
     vector<int> g1Common;  
+    set<int> revColcand(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end());
     for (auto i = 0; i < discreteInputData[vecGenes[0]].size() ;i++){
-      auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[vecGenes[0]][i]);
-      if(res!=lcsTags[vecGenes[1]].end())
+      auto res = revColcand.find(discreteInputData[vecGenes[0]][i]);
+      if(res!=revColcand.end())
         g1Common.push_back(discreteInputData[vecGenes[0]][i]);
     }
     #pragma omp parallel for default(shared)
@@ -535,8 +571,8 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
         continue;
        //instersect second lcs input with lcs seed and calculate common vector
       for (auto i = 0; i < discreteInputData[ki].size() ;i++){
-        auto res = find(lcsTags[vecGenes[1]].begin(), lcsTags[vecGenes[1]].end(), discreteInputData[ki][i]);
-        if(res!=lcsTags[vecGenes[1]].end())
+        auto res = revColcand.find(discreteInputData[ki][i]);
+        if(res!=revColcand.end())
           g2Common.push_back(discreteInputData[ki][i]);
       }
       //reverse the second input
@@ -605,7 +641,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     for (auto ki=0; ki < components; ki++){
       currBlock->genes.push_back(vecGenes[ki]);
       // update vector with all found genes
-      auto result1 = find(vecAllInCluster.begin(), vecAllInCluster.end(), vecGenes[ki]);
+      auto result1 = vecAllInCluster.find(vecGenes[ki]);
       if(result1==vecAllInCluster.end())
         vecAllInCluster.insert(vecGenes[ki]);
     }
@@ -616,11 +652,10 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     if (arrBlocks.size() == gParameters.SchBlock) 
       break;
   }
-
   //------------------------------------------------------------------------------------------------------------------------------------
   // Sorting and postprocessing of biclusters
 
-  sort(arrBlocks.begin(), arrBlocks.end(), &blockComp);
+  stable_sort(arrBlocks.begin(), arrBlocks.end(), &blockComp);
   int n = min(static_cast<int>(arrBlocks.size()), gParameters.RptBlock);
   bool flag;
 

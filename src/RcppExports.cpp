@@ -31,12 +31,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // unisort
-Rcpp::NumericMatrix unisort(Rcpp::NumericMatrix x);
+Rcpp::IntegerMatrix unisort(Rcpp::IntegerMatrix x);
 RcppExport SEXP _runibic_unisort(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(unisort(x));
     return rcpp_result_gen;
 END_RCPP
