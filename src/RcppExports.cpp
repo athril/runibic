@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// runibic_params
-void runibic_params(double t, double q, double f, int nbic, int div);
-RcppExport SEXP _runibic_runibic_params(SEXP tSEXP, SEXP qSEXP, SEXP fSEXP, SEXP nbicSEXP, SEXP divSEXP) {
+// set_runibic_params
+void set_runibic_params(double t, double q, double f, int nbic, int div);
+RcppExport SEXP _runibic_set_runibic_params(SEXP tSEXP, SEXP qSEXP, SEXP fSEXP, SEXP nbicSEXP, SEXP divSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type t(tSEXP);
@@ -15,18 +15,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type f(fSEXP);
     Rcpp::traits::input_parameter< int >::type nbic(nbicSEXP);
     Rcpp::traits::input_parameter< int >::type div(divSEXP);
-    runibic_params(t, q, f, nbic, div);
+    set_runibic_params(t, q, f, nbic, div);
     return R_NilValue;
 END_RCPP
 }
-// discretize
-Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x);
-RcppExport SEXP _runibic_discretize(SEXP xSEXP) {
+// runiDiscretize
+Rcpp::IntegerMatrix runiDiscretize(Rcpp::NumericMatrix x);
+RcppExport SEXP _runibic_runiDiscretize(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(discretize(x));
+    rcpp_result_gen = Rcpp::wrap(runiDiscretize(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -96,8 +96,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_runibic_runibic_params", (DL_FUNC) &_runibic_runibic_params, 5},
-    {"_runibic_discretize", (DL_FUNC) &_runibic_discretize, 1},
+    {"_runibic_set_runibic_params", (DL_FUNC) &_runibic_set_runibic_params, 5},
+    {"_runibic_runiDiscretize", (DL_FUNC) &_runibic_runiDiscretize, 1},
     {"_runibic_unisort", (DL_FUNC) &_runibic_unisort, 1},
     {"_runibic_pairwiseLCS", (DL_FUNC) &_runibic_pairwiseLCS, 2},
     {"_runibic_backtrackLCS", (DL_FUNC) &_runibic_backtrackLCS, 2},

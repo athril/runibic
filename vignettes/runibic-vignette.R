@@ -136,5 +136,5 @@ B=replicate(10, rnorm(10))
 B
 
 #check each row
-discretize(B)
+runiDiscretize(B)
 

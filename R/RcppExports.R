@@ -13,13 +13,13 @@
 #' @return NULL (an empty value)
 #'
 #' @examples
-#' runibic_params(0.85,0,1,100,0)
+#' set_runibic_params(0.85, 0, 1, 100,0)
 #'
-runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
-    invisible(.Call('_runibic_runibic_params', PACKAGE = 'runibic', t, q, f, nbic, div))
+set_runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
+    invisible(.Call('_runibic_set_runibic_params', PACKAGE = 'runibic', t, q, f, nbic, div))
 }
 
-#' Discretize an input matrix
+#' Discretize an input matrix 
 #'
 #' This function discretizes the input matrix
 #'
@@ -28,10 +28,10 @@ runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
 #'
 #' @examples
 #' A=replicate(10, rnorm(20))
-#' discretize(A)
+#' runiDiscretize(A)
 #'
-discretize <- function(x) {
-    .Call('_runibic_discretize', PACKAGE = 'runibic', x)
+runiDiscretize <- function(x) {
+    .Call('_runibic_runiDiscretize', PACKAGE = 'runibic', x)
 }
 
 #' Computing the indexes of j-th smallest values of each row
@@ -43,7 +43,7 @@ discretize <- function(x) {
 #' @return a numeric matrix with indexes indicating positions of j-th smallest element in each row
 #'
 #' @examples
-#' A=matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE)
+#' A=matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE)
 #' unisort(A)
 #'
 #' @export
@@ -61,7 +61,7 @@ unisort <- function(x) {
 #' @return a matrix storing Longest Common Subsequence (LCS)
 #'
 #' @examples
-#' pairwiseLCS(c(1,2,3,4,5),c(1,2,4))
+#' pairwiseLCS(c(1,2,3,4,5), c(1,2,4))
 #'
 #' @export
 pairwiseLCS <- function(x, y) {
@@ -78,7 +78,7 @@ pairwiseLCS <- function(x, y) {
 #' @return an integer with the length of Longest Common Subsequence (LCS)
 #'
 #' @examples
-#' backtrackLCS( c(1,2,3,4,5),c(1,2,4))
+#' backtrackLCS(c(1,2,3,4,5), c(1,2,4))
 #'
 #' @export
 backtrackLCS <- function(x, y) {
@@ -94,7 +94,7 @@ backtrackLCS <- function(x, y) {
 #' @return a list with informa
 #'
 #' @examples
-#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+#' calculateLCS(matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE))
 #'
 #' @export
 calculateLCS <- function(discreteInput, useFibHeap = TRUE) {

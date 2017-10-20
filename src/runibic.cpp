@@ -56,10 +56,10 @@ Params gParameters;
 //' @return NULL (an empty value)
 //'
 //' @examples
-//' runibic_params(0.85,0,1,100,0)
+//' set_runibic_params(0.85, 0, 1, 100,0)
 //'
 // [[Rcpp::export]]
-void runibic_params(double t = 0.85,double q = 0,double f = 1, int nbic = 100,int div = 0)
+void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 100, int div = 0)
 {
   gParameters.Tolerance=t;
   gParameters.Quantile = q;
@@ -70,7 +70,7 @@ void runibic_params(double t = 0.85,double q = 0,double f = 1, int nbic = 100,in
 }
 
 
-//' Discretize an input matrix
+//' Discretize an input matrix 
 //'
 //' This function discretizes the input matrix
 //'
@@ -79,10 +79,10 @@ void runibic_params(double t = 0.85,double q = 0,double f = 1, int nbic = 100,in
 //'
 //' @examples
 //' A=replicate(10, rnorm(20))
-//' discretize(A)
+//' runiDiscretize(A)
 //'
 // [[Rcpp::export]]
-Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
+Rcpp::IntegerMatrix runiDiscretize(Rcpp::NumericMatrix x) {
   IntegerMatrix y(x.nrow(),x.ncol());
 
   gParameters.InitOptions(x.nrow(),x.ncol());
@@ -150,7 +150,7 @@ Rcpp::IntegerMatrix discretize(Rcpp::NumericMatrix x) {
 //' @return a numeric matrix with indexes indicating positions of j-th smallest element in each row
 //'
 //' @examples
-//' A=matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE)
+//' A=matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE)
 //' unisort(A)
 //'
 //' @export
@@ -202,7 +202,7 @@ Rcpp::IntegerMatrix unisort(Rcpp::IntegerMatrix x) {
 //' @return a matrix storing Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' pairwiseLCS(c(1,2,3,4,5),c(1,2,4))
+//' pairwiseLCS(c(1,2,3,4,5), c(1,2,4))
 //'
 //' @export
 // [[Rcpp::export]]
@@ -244,7 +244,7 @@ Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 //' @return an integer with the length of Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' backtrackLCS( c(1,2,3,4,5),c(1,2,4))
+//' backtrackLCS(c(1,2,3,4,5), c(1,2,4))
 //'
 //' @export
 // [[Rcpp::export]]
@@ -278,7 +278,7 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 //' @return a list with informa
 //'
 //' @examples
-//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7),nrow=2,byrow=TRUE))
+//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE))
 //'
 //' @export
 // [[Rcpp::export]]
@@ -726,31 +726,3 @@ Rcpp::List fromBlocks(BicBlock ** blocks, const int numBlocks, const int nr, con
            Named("Number") = numBlocks,
            Named("info") = List::create());
 }
-
-
-
-/*
-// Unoptimized version of unisort
-// [[Rcpp::export]]
-
-Rcpp::NumericMatrix unisort_not_optimal(Rcpp::NumericMatrix x){
-  NumericMatrix y(x);
-  int nr = x.nrow();
-  int nc = x.ncol();
-
-  vector< pair<float,int> > a;
-  for (int j=0; j<nr; j++) {
-    for (int i=0; i<nc; i++) {
-      a.push_back(std::make_pair(x(j,i),i));
-    }
-
-    sort(a.begin(), a.end());
-    for (int i=0; i<nc; i++) {
-      y(j,i)=a[i].second;
-    }
-    a.clear();
-  }
-  return y;
-}
-*/
-

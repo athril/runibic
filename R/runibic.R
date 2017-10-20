@@ -46,13 +46,13 @@ setClass(Class = "BCUnibicD", contains = "BiclustMethod",
 #' @describeIn Unibic biclustering algrorithm for discrete data
 #'
 #' @examples
-#' BCUnibicD(discretize(replicate(10, rnorm(20))))
+#' BCUnibicD(runiDiscretize(replicate(10, rnorm(20))))
 #' @usage \S4method{biclust}{matrix,BCUnibicD}(x=NULL, method=BCUnibicD(), t = 0.95, q = 0.5, f = 1, nbic = 100, div = 0)
 BCUnibicD <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 
     return(methods::new("BCUnibicD"))
-  res<- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
-  res@Parameters$Call = match.call()
+  res <- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+  res@Parameters$Call <- match.call()
   return (res);
 }
 
@@ -77,8 +77,8 @@ BCUnibicD <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 BCUnibic <- function(x=NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
   if (is.null(x)) 
     return(methods::new("BCUnibic"))
-  res<- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
-  res@Parameters$Call = match.call()
+  res <- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+  res@Parameters$Call <- match.call()
   return (res);
 }
 
@@ -97,9 +97,9 @@ runibic_d <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 
   MYCALL <- match.call()
 
-  iX = unisort(x)
-  LCSRes = calculateLCS(x,TRUE)
-  res = cluster(iX,x, LCSRes$lcslen,LCSRes$a,LCSRes$b, nrow(x), ncol(x) )
+  iX <- unisort(x)
+  LCSRes <- calculateLCS(x, TRUE)
+  res <- cluster(iX, x, LCSRes$lcslen, LCSRes$a, LCSRes$b, nrow(x), ncol(x) )
   return(biclust::BiclustResult(as.list(MYCALL), matrix(unlist(res["RowxNumber"]), ncol = as.numeric(res["Number"]), byrow = FALSE),
                                 matrix(unlist(res["NumberxCol"]), nrow = as.numeric(res["Number"]), byrow = FALSE), as.numeric(res["Number"]),
                                 res["info"]))
@@ -122,10 +122,10 @@ runibic_d <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' runibic(A)
 runibic <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
   if(inherits(x,"SummarizedExperiment")){
-    return (runibic_se(x,t,q,f,nbic,div))
+    return (runibic_se(x, t, q, f, nbic, div))
   }
-  runibic_params(t,q,f,nbic,div)
-  x_d <- discretize(x)
+  set_runibic_params(t, q, f, nbic, div)
+  x_d <- runiDiscretize(x)
   return(runibic_d(x_d, t, q, f, nbic, div))
 }
 
@@ -146,8 +146,8 @@ runibic <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 runibic_se <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 
   if(!inherits(x,"SummarizedExperiment")) stop("x must be a SummarizedExperiment")
-  runibic_params(t,q,f,nbic,div)
-  x_d <- lapply(assays(x), discretize)
+  set_runibic_params(t, q, f, nbic, div)
+  x_d <- lapply(assays(x), runiDiscretize)
   return(lapply(x_d, runibic_d, t, q, f, nbic, div))
 }
 
