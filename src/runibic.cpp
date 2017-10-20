@@ -44,7 +44,7 @@ Params gParameters;
 
 
 
-//' Set the parameters
+//' Set the parameters for runibic algorithm
 //'
 //' Runibic function for setting parameters
 //'
@@ -56,7 +56,7 @@ Params gParameters;
 //' @return NULL (an empty value)
 //'
 //' @examples
-//' set_runibic_params(0.85, 0, 1, 100,0)
+//' set_runibic_params(0.85, 0, 1, 100, 0)
 //'
 // [[Rcpp::export]]
 void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 100, int div = 0)
@@ -72,8 +72,14 @@ void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 
 
 //' Discretize an input matrix 
 //'
-//' This function discretizes the input matrix
-//'
+//' This function discretizes the input matrix. RuniDiscretize uses paramaters: 'div' and 'q' set by set_runibic_params function.
+//' Funtion delivers a discret matrix with given number of ranks based on parameter div. In contrast to original biclust::discretize
+//' our function take into consideration the quantile parameter 'q'. When 'q' parameter is higher or equal 0.5 we use simple discretization
+//' with levels of same size using the quantiles and when the 'q' parameter lower than 0.5 we use up(down)-regulated discretization divided
+//' into three parts;
+//' 
+//' @see set_runibic_params
+//' @see [biclust::discretize](https://cran.r-project.org/web/packages/biclust/biclust.pdf
 //' @param x a numeric matrix
 //' @return a discretized matrix containing integers only
 //'
@@ -143,14 +149,14 @@ Rcpp::IntegerMatrix runiDiscretize(Rcpp::NumericMatrix x) {
 }
 //' Computing the indexes of j-th smallest values of each row
 //'
-//' This function sorts separately each row of a numeric matrix and returns a matrix
+//' This function sorts separately each row of a integer matrix and returns a matrix
 //' in which the value in i-th row and j-th column represent the index of the j-th smallest value of the i-th row.
 //'
-//' @param x a numeric matrix
-//' @return a numeric matrix with indexes indicating positions of j-th smallest element in each row
+//' @param x a integer matrix
+//' @return a integer matrix with indexes indicating positions of j-th smallest element in each row
 //'
 //' @examples
-//' A=matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE)
+//' A=matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
 //' unisort(A)
 //'
 //' @export
@@ -195,14 +201,17 @@ Rcpp::IntegerMatrix unisort(Rcpp::IntegerMatrix x) {
 //' Calculating a matrix of Longest Common Subsequence (LCS) between a pair of numeric vectors
 //'
 //' This function calculates the matrix with Longest Common Subsequence (LCS)
-//' between two numeric vectors.
+//' between two numeric vectors. From given matrix we can locate the size of the Longest Common Subsequence
+//' in the last column in the last row.
 //'
 //' @param x an integer vector
 //' @param y an integer vector
 //' @return a matrix storing Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' pairwiseLCS(c(1,2,3,4,5), c(1,2,4))
+//' A = c(1, 2, 3, 4, 5)
+//' B = c(1, 2, 4)
+//' pairwiseLCS(A, B)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -234,17 +243,19 @@ Rcpp::IntegerMatrix pairwiseLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
 
 
 
-//' Retrieving from a matrix Longest Common Subsequence (LCS) between a pair of numeric vector.
+//' Retrieving a Longest Common Subsequence between two integer vectors.
 //'
 //' This function retrieves the Longest Common Subsequence (LCS)
-//' between two numeric vectors by backtracking the matrix obtained with dynamic programming.
+//' between two integer vectors by backtracking the matrix obtained with dynamic programming.
 //'
 //' @param x an integer vector
 //' @param y an integer vector
-//' @return an integer with the length of Longest Common Subsequence (LCS)
+//' @return an integer vector with the values of Longest Common Subsequence (LCS)
 //'
 //' @examples
-//' backtrackLCS(c(1,2,3,4,5), c(1,2,4))
+//' A = c(1, 2, 3, 4, 5)
+//' B = c(1, 2, 4)
+//' backtrackLCS(A, B)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -269,16 +280,21 @@ Rcpp::IntegerVector backtrackLCS(Rcpp::IntegerVector x, Rcpp::IntegerVector y) {
   return lcs;
 }
 
-//' This function calculates all pairwise LCSes within the array.
+//' Calculate all Longest Common Subsequences between a matrix.
 //'
-//' This function computes unique pairwise Longest Common Subsequences within the matrix.
+//' This function computes unique pairwise Longest Common Subsequences between each row of input matrix.
+//' The function outputs a list sorted by Longest Common Subsequences (LCS) length. The output list contains:
+//' length of calculated LCS, indices, of the first and second rows, between which LCS was calculated.
+//' The function uses two different sorting methods. The first and default one uses Fibonacci Heap used in original
+//' implementation of Unibic, the second one uses standard sorting algorithm from C++ STL.
 //'
-//' @param discreteInput is a matrix
-//' @param useFibHeap boolean value if Fibonacci heap should be used for sorting and seeding
-//' @return a list with informa
+//' @param discreteInput is a input discrete matrix
+//' @param useFibHeap boolean value for choosing which sorting method should be used in sorting of output
+//' @return a list with sorted values based by LCS length calculated pairwise between all rows
 //'
 //' @examples
-//' calculateLCS(matrix(c(4,3,1,2,5,8,6,7), nrow=2, byrow=TRUE))
+//' A = matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
+//' calculateLCS(A, TRUE)
 //'
 //' @export
 // [[Rcpp::export]]
@@ -344,23 +360,30 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 //           Named("order") = triplets);
 }
 
-
-
-
-//' Calculating biclusters from sorted list of LCS scores
+//' Calculating biclusters from sorted list of LCS scores and row indices
 //'
-//'
+//' This function search for biclusters in the input matrix. The calculations are based on the 
+//' a integer matrix with indexes indicating positions of j-th smallest element in each row and the results from
+//' calculations of Longest Common Subsequence between all rows in the input matrix. The paramteres of this function can be
+//' obtained from other functions provided by this package.
+//' @see calculateLCS
+//' @see unisort
+//' 
+//' 
 //' @param discreteInput an integer matrix with indices of sorted columns
-//' @param discreteInputValues an integer matrix with values after discretization
-//' @param scores a numeric vector
-//' @param geneOne a numeric vector
-//' @param geneTwo a numeric vector
-//' @param rowNumber a int with number of rows
-//' @param colNumber a int with number of columns
-//' @return a number of found clusters
+//' @param discreteInputValues an integer matrix with discrete values
+//' @param scores a numeric vector with LCS length
+//' @param geneOne a numeric vector with first row indexes from pairwise LCS calculation 
+//' @param geneTwo a numeric vector with second row indexes from pairwise LCS calculation 
+//' @param rowNumber a int with number of rows in the input matrix
+//' @param colNumber a int with number of columns in the input matrix
+//' @return a list with information of found biclusters
 //'
 //' @examples
-//' cluster(matrix(c(0,3,1,2,3,1,2,0,1,3,2,0),nrow=4,byrow=TRUE),matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
+//' A = matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+//' iA = unisort(A)
+//' lcsResults = calculateLCS(A)
+//' cluster(iA,A,lcsResults$lcslen,lcsResults$a, lcsResults$b,nrow(A),ncol(A))
 //'
 //' @export
 // [[Rcpp::export]]

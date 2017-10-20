@@ -111,7 +111,7 @@ runibic_d <- function(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' @param x numeric matrix or SummarizedExperiment
 #' @param t consistency level of the block (0.5-1.0].
 #' @param q a double value for quantile discretization
-#' @param f filtering overlapping blocks, default 1(do not remove any blocks)
+#' @param f value for filtering overlapping blocks, default 1(do not remove any blocks)
 #' @param nbic maximum number of biclusters in output
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 #' @return Biclust object with detected biclusters

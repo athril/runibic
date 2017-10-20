@@ -138,3 +138,8 @@ B
 #check each row
 runiDiscretize(B)
 
+#cluster example
+A = matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+iA = unisort(A)
+lcsResults = calculateLCS(A)
+cluster(iA,A,lcsResults$lcslen,lcsResults$a, lcsResults$b,nrow(A),ncol(A))
