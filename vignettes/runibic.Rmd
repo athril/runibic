@@ -3,9 +3,9 @@ author: "Patryk Orzechowski, Artur Pańszczyk"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{runibic: UniBic in R Tutorial}
-  %\usepackage[UTF-8]{inputenc}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{runibic: UniBic in R Tutorial}
+    %\usepackage[UTF-8]{inputenc}
 ---
 
 # runibic: UniBic biclustering algorithm for R
@@ -41,34 +41,265 @@ install.packages("devtools")
 devtools::install_github("athril/runibic")
 ```
 
-## Example
-### Gene expression dataset
-This example presents how to use runibic package on gene expression dataset:
+## Examples
+
+
+
+### Synthetic data
+This example shows the basic usage of runibic on synthetic data. We start with loading the libraries.
 ```r
 library(runibic)
 library(biclust)
+```
+
+First we prepare a random matrix.
+```r
+test <- matrix(rnorm(1000), 100, 100)
+test
+```
+
+Then, we run UniBic biclustering algorithm on the dataset.
+We use a [biclust::Biclust](https://cran.r-project.org/web/packages/biclust/biclust.pdf) package wrapper.
+```r
+res = biclust::biclust(test, method = BCUnibic())
+```
+
+We can inspect the results returned by the method. Let's see how many biclusters were detected.
+```r
+res@Number
+```
+
+We could also inspect the rows of a specific bicluster, for example the third one.
+```r
+which(res@RowxNumber[,3])
+```
+
+Similarly we could check the indexes of columns of the third bicluster.
+```r
+which(res@NumberxCol[3,])
+```
+
+
+Visual analyses are very useful in biclustering. Let's draw the heatmap with the obtained bicluster.
+```r
+drawHeatmap(test, res, 3)
+```
+
+We could also present parallel coordinates plot of the bicluster.
+```r
+parallelCoordinates(test,res,3)
+```
+
+Similarly the package could be used to find trends in discrete data.
+We run runiDiscretize
+```r
+A <- runiDiscretize(replicate(10, rnorm(20)))
+A
+```
+
+Finally, we run the UniBic algorithm dedicated to work with discrete datasets.
+```r
+BCUnibicD(A)
+```
+
+
+
+
+
+### Data provided by other packages
+This example presents how to use runibic package on a sample dataset.
+After loading all required libraries
+```r 
+library(runibic)
+library(biclust)
+```
+we apply UniBic biclustering method to the sample yeast dataset from [biclust::Biclust](https://cran.r-project.org/web/packages/biclust/biclust.pdf) package.
+```r
 data(BicatYeast)
 res = biclust(method=BCUnibic(),BicatYeast)
+```
+
+The method has found 92 biclusters. Now we are going to analyze the results. We will start with drawing a heatmap of the first found bicluster.
+```r
 drawHeatmap(BicatYeast, res, 1)
+```
+
+Then we may check the result drawing the genes from the bicluster using parallel coordinates plot.
+```r
 parallelCoordinates(BicatYeast,res,1)
 ```
 
+
+
 ### Summarized experiment
-This example presents how to use runibic package on SummarizedExperiment:
+The third application of runibic is using the algorithm on the dataset from an RNA-Seq experiment (SummarizedExperiment).
+We start with loading necessary packages (runibic, SummarizedExperiment) and load the airway dataset.
 ```r
 library(runibic)
 library(SummarizedExperiment)
+```r
 data(airway, package="airway")
+```
+
+We will take only a subset of the data to check if the method can return any patterns.
+```r
 se <- airway[1:20,]
+```
+
+Let's see if UniBic detects any pattern in the dataset.
+```r
 res<- runibic(se)
+```
+
+The result could be visualized using parallelCoordinates method.
+```r
 parallelCoordinates(assays(se)[[1]], res[[1]], 2)
 ```
 
-### Tutorial
-Please check [runibic tutorial](https://github.com/athril/runibic/tree/master/vignettes/runibic-vignette.R)
+We can also draw a heatmap with the second bicluster.
+```r
+drawHeatmap(assays(se)[[1]], res[[1]], 2)
+```
+
+### Gene expression dataset
+Another very useful application of the runibic package is analyzing real dataset obtained from Gene Expression Omnibus (GEO).
+For this task we will use two packages: [GEOquery](http://bioconductor.org/packages/release/bioc/html/GEOquery.html) to download the data and [affy](http://bioconductor.org/packages/release/bioc/html/affy.html) to analyze the results.
+
+```r
+library(GEOquery)
+library(affy)
+```
+We download dataset with Rat peripheral and brain regions from Gene Expression Omnibus.
+```r
+gse <- GEOquery::getGEO("GDS589", GSEMatrix = TRUE)
+```
+
+Now we convert dataset to ExpressionSet and take subset of the dataset.
+```r
+eset <- affy::GDS2eSet(gds)
+subset <-affy::exprs(eset)[1:100,]
+```
+
+We perform analysis on first 100 of genes
+```r
+res <- runibic(subset)
+```
+
+Finally, we draw the heatmap with the first bicluster.
+```r
+drawHeatmap(subset, res, 1)
+```
+
+
+
+
+### Comparing the results of different biclustering algorithms
+We load package with QUBIC biclustering algorithm for comparison
+```r
+library(runibic)
+library(QUBIC)
+data(BicatYeast)
+```
+Now, we perform biclustering using CC, Bimax, Qubic, Plaid and Unibic:
+```r
+resCC <- biclust::biclust(BicatYeast, method = BCCC())
+resBi <- biclust::biclust(BicatYeast, method = BCBimax())
+resQub <- biclust::biclust(BicatYeast, method = BCQU())
+resPlaid <- biclust::biclust(BicatYeast, method = BCPlaid())
+resUni <- biclust::biclust(BicatYeast, method = BCUnibic())
+```
+
+The results of clustering could be compared using showinfo method from QUBIC package.
+```r
+QUBIC::showinfo(BicatYeast,c(resCC, resBi, resPlaid, resQub, resUni))
+```
+
+
+### Finding the Longest Common Subsequence between two vectors (1)
+
+The Longest Common Subsequence (LCS) between two vectors is the longest series of the data 
+that is present in both analyzed vectors. 
+Let's prepare two vectors for the analysis.
+```r
+A=c(1,2,1,5,4,3)
+B=c(2,1,3,2,1,4)
+```
+You may notice that the values (1,2,4) are contained in both vectors:
+in vector A: (1,2,x,x,4,x) and in vector B: (x,1,x,2,x,4)
+
+
+Let's use the methods provided by the package to calculate the longest common subsequence.
+We first check which values are common for both vectors
+```r
+backtrackLCS(A,B)
+```
+Then we calculate using dynamic programming the matrix for Longest Common Subsequence.
+```r
+pairwiseLCS(A,B)
+```
+
+### Finding the Longest Common Subsequence between two vectors (2)
+
+In our next example we will find the length of the longest common subsequence within the matrix
+We start with preparing input matrix.
+```r
+A = matrix(c(11,17,12,10,8,9,19,15,18,13,14,7,4,6,16,2,3,1,5,20,
+    17,1,8,15,5,10,2,12,9,7,3,14,11,4,6,16,20,13,19,18,
+    15,8,17,12,18,14,19,11,16,20,10,13,6,3,7,9,1,2,5,4,
+    15,12,16,9,19,17,10,18,11,20,8,13,2,5,7,14,1,3,4,6,
+    15,10,9,6,13,19,7,18,16,17,14,4,3,1,2,20,12,5,11,8,
+    1,7,4,3,2,6,8,13,5,9,12,11,16,15,17,10,19,20,14,18,
+    10,5,3,9,2,11,6,13,8,1,7,4,16,14,15,12,18,17,20,19,
+    10,5,1,12,8,11,7,13,6,4,3,2,18,14,15,9,17,16,20,19,
+    9,6,3,10,1,12,7,13,8,2,5,4,16,14,15,11,19,17,20,18,
+    12,8,1,3,2,11,4,14,9,7,10,5,16,13,15,6,18,17,20,19), nrow=10, byrow=TRUE)
+```
+
+We sort data in each row with the sorting function
+```r
+unisort(A)
+```
+
+Now we calculate the length of LCS between each pair of rows
+```r
+lcs=calculateLCS(A)
+```
+
+We can check the length of the longest common subsequence (e.g. LCS between rows 6 and 7 is equal to 10).
+```r
+list(a=lcs$a[2], b=lcs$b[2], lclen=lcs$lcslen[2])
+```
+
+
+### Discretizing a matrix using the quantile method from UniBic
+
+First we create a random matrix
+```r
+B=replicate(10, rnorm(10))
+B
+```
+
+Discretization from UniBic could be applied in the following way:
+```r
+runiDiscretize(B)
+```
+
+### Running UniBic algorithm step by step
+The last example shows how to use cluster function from the package.
+After creating a matrix we sort values in each row and calculate LCS between all pairs of rows.
+```r
+A = matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+iA = unisort(A)
+lcsResults = calculateLCS(A)
+```
+
+Finally, we apply the cluster function to inspect the results.
+```r
+cluster(iA,A,lcsResults$lcslen,lcsResults$a, lcsResults$b,nrow(A),ncol(A))
+```
+
 
 ## References
 * [Cheng2000] Cheng, Yizong, and George M. Church. "Biclustering of expression data." Ismb. Vol. 8. No. 2000. 2000.
 * [Eren2012] Eren, Kemal, et al. "A comparative analysis of biclustering algorithms for gene expression data." Briefings in bioinformatics 14.3, 2012: 279-292.
 * [Wang2016] Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
-

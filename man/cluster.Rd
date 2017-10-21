@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{cluster}
 \alias{cluster}
-\title{Calculating biclusters from sorted list of LCS scores}
+\title{Calculating biclusters from sorted list of LCS scores and row indices}
 \usage{
 cluster(discreteInput, discreteInputValues, scores, geneOne, geneTwo, rowNumber,
   colNumber)
@@ -10,25 +10,40 @@ cluster(discreteInput, discreteInputValues, scores, geneOne, geneTwo, rowNumber,
 \arguments{
 \item{discreteInput}{an integer matrix with indices of sorted columns}
 
-\item{discreteInputValues}{an integer matrix with values after discretization}
+\item{discreteInputValues}{an integer matrix with discrete values}
 
-\item{scores}{a numeric vector}
+\item{scores}{a numeric vector with LCS length}
 
-\item{geneOne}{a numeric vector}
+\item{geneOne}{a numeric vector with first row indexes 
+from pairwise LCS calculation}
 
-\item{geneTwo}{a numeric vector}
+\item{geneTwo}{a numeric vector with second row indexes 
+from pairwise LCS calculation}
 
-\item{rowNumber}{a int with number of rows}
+\item{rowNumber}{a int with number of rows in the input matrix}
 
-\item{colNumber}{a int with number of columns}
+\item{colNumber}{a int with number of columns in the input matrix}
 }
 \value{
-a number of found clusters
+a list with information of found biclusters
 }
 \description{
-Calculating biclusters from sorted list of LCS scores
+This function search for biclusters in the input matrix. 
+The calculations are based on the integer matrix with indexes 
+indicating positions of j-th smallest element in each row 
+and the results from calculations of Longest Common Subsequence 
+between all rows in the input matrix. The paramteres of this function can be
+obtained from other functions provided by this package.
 }
 \examples{
-cluster(matrix(c(0,3,1,2,3,1,2,0,1,3,2,0),nrow=4,byrow=TRUE),matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE),c(13,12,11,7,5,3),c(0,1,2,0,0,1), c(3,2,3,2,1,3),4,3)
+A = matrix( c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+iA = unisort(A)
+lcsResults = calculateLCS(A)
+cluster(iA, A, lcsResults$lcslen, lcsResults$a, lcsResults$b, nrow(A), ncol(A))
 
+}
+\seealso{
+calculateLCS
+
+unisort
 }

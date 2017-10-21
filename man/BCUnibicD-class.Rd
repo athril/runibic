@@ -5,5 +5,6 @@
 \alias{BCUnibicD-class}
 \title{Class BCUnibicD}
 \description{
-Class BCUnibicD performs biclustering discrete matrix using UniBic biclustering algorithm.
+Class \code{BCUnibicD} defines UniBic biclustering algorithm
+for discrete input
 }

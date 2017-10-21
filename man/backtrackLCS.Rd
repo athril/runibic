@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{backtrackLCS}
 \alias{backtrackLCS}
-\title{Retrieving from a matrix Longest Common Subsequence (LCS) between a pair of numeric vector.}
+\title{Retrieving a Longest Common Subsequence between two integer vectors.}
 \usage{
 backtrackLCS(x, y)
 }
@@ -12,13 +12,16 @@ backtrackLCS(x, y)
 \item{y}{an integer vector}
 }
 \value{
-an integer with the length of Longest Common Subsequence (LCS)
+an integer vector with the values of Longest Common Subsequence (LCS)
 }
 \description{
 This function retrieves the Longest Common Subsequence (LCS)
-between two numeric vectors by backtracking the matrix obtained with dynamic programming.
+between two integer vectors by backtracking the matrix 
+obtained with dynamic programming.
 }
 \examples{
-backtrackLCS( c(1,2,3,4,5),c(1,2,4))
+A = c(1, 2, 3, 4, 5)
+B = c(1, 2, 4)
+backtrackLCS(A, B)
 
 }

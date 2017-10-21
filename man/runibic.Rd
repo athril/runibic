@@ -4,8 +4,12 @@
 \name{runibic}
 \alias{runibic}
 \alias{runibic-package}
-\title{Parallel row-based biclustering algorithm for analysis of gene expression data in R}
+\alias{runibic_d}
+\title{runibic: parallel row-based biclustering algorithm
+for analysis of gene expression data in R}
 \usage{
+runibic_d(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+
 runibic(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 }
 \arguments{
@@ -19,16 +23,24 @@ runibic(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 
 \item{nbic}{maximum number of biclusters in output}
 
-\item{div}{number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)}
+\item{div}{number of ranks for up(down)-regulated genes: default: 0==ncol(x)}
 }
 \value{
 Biclust object with detected biclusters
 }
 \description{
-Parallel row-based biclustering algorithm for analysis of gene expression data in R
+runibic: parallel row-based biclustering algorithm
+for analysis of gene expression data in R
 
-Parallel row-based biclustering algorithm for analysis of gene expression data in R
+runibic_d
+
+runibic
 }
+\section{Functions}{
+\itemize{
+\item \code{runibic_d}: biclustering algrorithm for discrete data
+}}
+
 \examples{
 A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 runibic(A)

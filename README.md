@@ -47,7 +47,7 @@ parallelCoordinates(assays(se)[[1]], res[[1]], 2)
 ```
 
 ### Tutorial
-Please check [runibic tutorial](https://github.com/athril/runibic/tree/master/vignettes/runibic-vignette.R)
+Please check [runibic tutorial](https://github.com/athril/runibic/tree/master/vignettes/runibic.Rmd)
 
 ## References
 * [Wang2016] Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
