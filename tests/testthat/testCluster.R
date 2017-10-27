@@ -1,7 +1,7 @@
 context("Calculating Cluster function")
 
 test_that("Calculating Cluster function from LCS results", {
-    A = matrix(c(11,17,12,10,8,9,19,15,18,13,14,7,4,6,16,2,3,1,5,20,
+    A <- matrix(c(11,17,12,10,8,9,19,15,18,13,14,7,4,6,16,2,3,1,5,20,
                17,1,8,15,5,10,2,12,9,7,3,14,11,4,6,16,20,13,19,18,
                15,8,17,12,18,14,19,11,16,20,10,13,6,3,7,9,1,2,5,4,
                15,12,16,9,19,17,10,18,11,20,8,13,2,5,7,14,1,3,4,6,
@@ -19,12 +19,12 @@ test_that("Calculating Cluster function from LCS results", {
                14,18,12,17,11,10,19,20,13,16,15,9,8,4,7,6,1,5,2,3,
                18,19,11,17,14,9,15,20,12,16,13,10,7,1,5,8,2,6,4,3,
                9,8,4,10,3,6,1,20,2,7,5,12,11,13,15,14,17,19,18,16,
-               18,14,3,16,4,17,2,20,6,8,5,19,7,10,13,1,12,15,11,9), nrow=19, byrow=TRUE)
-    scores = c(13, 13, 12, 12, 11, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 4)
-    geneOne = c(6, 12, 2, 15, 8, 10, 5, 9, 12, 12, 13, 13, 5, 9, 17, 0, 14, 14, 0, 16, 13, 8, 8, 4, 0, 15, 15, 1, 12, 14, 13, 13, 14, 16, 1, 4, 4, 12, 12)
-    geneTwo = c(7, 13, 3, 16, 9, 11, 6, 10, 17, 14, 14, 17, 7, 11, 18, 3, 17, 18, 2, 18, 18, 10, 11, 6, 1, 17, 18, 3, 18, 15, 15, 16, 16, 17, 2, 5, 7, 15, 16)
-    b = unisort(A)
-    resultRow = matrix(c(0,1,0,
+               18,14,3,16,4,17,2,20,6,8,5,19,7,10,13,1,12,15,11,9), nrow = 19, byrow = TRUE)
+    scores <- c(13, 13, 12, 12, 11, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 4)
+    geneOne <- c(6, 12, 2, 15, 8, 10, 5, 9, 12, 12, 13, 13, 5, 9, 17, 0, 14, 14, 0, 16, 13, 8, 8, 4, 0, 15, 15, 1, 12, 14, 13, 13, 14, 16, 1, 4, 4, 12, 12)
+    geneTwo <- c(7, 13, 3, 16, 9, 11, 6, 10, 17, 14, 14, 17, 7, 11, 18, 3, 17, 18, 2, 18, 18, 10, 11, 6, 1, 17, 18, 3, 18, 15, 15, 16, 16, 17, 2, 5, 7, 15, 16)
+    b <- unisort(A)
+    resultRow <- matrix(c(0,1,0,
                         0,1,0,
                         0,1,0,
                         0,1,0,
@@ -43,14 +43,14 @@ test_that("Calculating Cluster function from LCS results", {
                         0,1,0,
                         0,1,1,
                         0,1,0), nrow = 19, byrow=TRUE)
-    resultRow = resultRow != 0
-    resultCol = matrix(c(1,1,1,0,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,
+    resultRow <- resultRow != 0
+    resultCol <- matrix(c(1,1,1,0,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,
                         0,0,1,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
                         1,1,0,1,1,0,1,1,0,1,0,1,0,0,1,1,1,1,1,1), nrow=3, byrow=TRUE)
-    resultCol = resultCol != 0
-    resultNumber = ncol(resultRow)
+    resultCol <- resultCol != 0
+    resultNumber <- ncol(resultRow)
     set_runibic_params(0.85, 0.5, 0.25, 100, 0)
-    L = cluster(b,A,scores,geneOne,geneTwo, nrow(A),ncol(A))
+    L <- cluster(b,A,scores,geneOne,geneTwo, nrow(A),ncol(A))
     expect_that( L, is_a("list"))
     expect_that( L$RowxNumber, equals(resultRow))
     expect_that( L$NumberxCol, equals(resultCol))

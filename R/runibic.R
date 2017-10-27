@@ -14,6 +14,22 @@
 #' @export BCUnibicD
 #' @description \code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic. 
 #' The original method was reimplemented from C to C++11, OpenMP was added for parallelization.
+#'
+#' @details
+#' For a given input matrix we first perform discretization and create index matrix using \code{\link{runiDiscretize}} function.
+#' The discretization is performed taking into account quantiles of the data.
+#' The resulting index matrix allows to detect order-preserving trends between each pair of the rows
+#' irrespective to the order of columns.
+#' After the ranking, the matrix is split by rows into subgroups based on the significance of the future biclusters.
+#' In each of the chunks, we calculate pairwise calculations of Longest Common Subsequence LCS between all pairs of the rows.
+#' LCS calculations are performed using dynamic programming and determine the longest order-preserving trend between each pair of the rows.
+#' After partitioning the matrix strict order-preserving biclusters are determined and later expanded
+#' to approximate-trend biclusters within \code{\link{cluster}} function.
+#'
+#' This package provides 3 main functions:
+#' \code{\link{runibic}} and \code{\link{BCUnibic}} perform UniBic biclustering algorithm on numeric data, whilst
+#' \code{\link{BCUnibicD}} could be applied to integer ones. The latter two methods are compatible with \code{\link[biclust]{Biclust}} class.
+#'
 #' @references Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
 NULL
 
@@ -39,14 +55,13 @@ setClass(Class = "BCUnibic", contains = "BiclustMethod",
 #'
 #' @name BCUnibicD-class
 #' @rdname BCUnibicD-class
-#' @seealso \code{\link{runibic}} 
 setClass(Class = "BCUnibicD", contains = "BiclustMethod",
     prototype = prototype(biclustFunction = function(x, ...) {
     runibic_d(x, ...)
 }))
 
 
-#' @describeIn runibic BCUnibic performs biclustering using UniBic on numeric matrix.
+#' @describeIn runibic \code{\link{BCUnibic}} performs biclustering using UniBic on numeric matrix.
 #' It is intended to use as a method called from \code{\link[biclust]{biclust}}.
 BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
     if (is.null(x))
@@ -67,7 +82,7 @@ BCUnibicD <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
     return (res);
 }
 
-#' @describeIn runibic perform biclustering using UniBic on integer matrix
+
 runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
     MYCALL <- match.call()
 
@@ -85,10 +100,10 @@ runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' runibic
 #'
 #' Each of the following functions \code{\link{BCUnibic}}, \code{\link{BCUnibicD}}, 
-#' \code{\link{runibic}}, \code{\link{runibic_d}} perform biclustering
+#' \code{\link{runibic}} perform biclustering
 #' using UniBic biclustering algorithm. The major difference
-#' between the functions is that \code{\link{BCUnibicD}} (or \code{\link{runibic_d}}) 
-#' require a discretized matrix, whilst \code{\link{BCUnibic}} (or \code{\link{runibic}})
+#' between the functions is that \code{\link{BCUnibicD}} require a discretized matrix, 
+#' whilst \code{\link{BCUnibic}} (or \code{\link{runibic}})
 #' could be applied to numeric one.
 #'
 #' @param x numeric or integer matrix (depends on the function)

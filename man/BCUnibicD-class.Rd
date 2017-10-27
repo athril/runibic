@@ -8,6 +8,3 @@
 An S4 class \code{\link{BCUnibicD-class}} defines UniBic biclustering algorithm
 for discrete input.
 }
-\seealso{
-\code{\link{runibic}}
-}
