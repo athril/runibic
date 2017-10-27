@@ -10,7 +10,6 @@
 #' @export runiDiscretize
 #' @export set_runibic_params
 #' @export runibic
-#' @export runibic_d
 #' @export BCUnibic
 #' @export BCUnibicD
 #' @description \code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic. 

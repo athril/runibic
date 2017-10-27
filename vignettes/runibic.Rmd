@@ -10,7 +10,7 @@ vignette: >
 
 # runibic: parallel UniBic biclustering algorithm for R
 
-This package contains implementation of UniBic biclustering algorithm for gene expression data [Wang2016].
+This package contains an updated parallel implementation of UniBic biclustering algorithm for gene expression data [Wang2016].
 The algorithm locates trend-preserving biclusters within complex and noisy data and is considered one of the most accurate among biclustering methods.
 
 ## Introduction 
@@ -18,20 +18,20 @@ The algorithm locates trend-preserving biclusters within complex and noisy data 
 Since their first application to gene expression data [Cheng2000] biclustering algorithms have gained much popularity [Eren2012].
 The reason for this is the ability of the methods to simultaneously detect valid patterns within the data that include only subset of rows and columns.
 
-In this package we provide an improved implementation of UniBic biclustering algorithm. This state-of-the-art algorithm is said to outperform multiple biclustering methods on both synthetic and genetic datasets.
-Our major contributions are reimplementing the method into more modern C++11 language as well as multiple improvements in code.
+In this package we provide an efficient parallel improved implementation of UniBic biclustering algorithm. This state-of-the-art algorithm is said to outperform multiple biclustering methods on both synthetic and genetic datasets.
+Our major contributions are reimplementing the method into more modern C++11 language as well as multiple improvements in code (memory management, code refactoring etc.)
 
 
 ## Functions
 This package provides the following functions:
-* BCUnibic - UniBic biclustering algorithm for continuous data
-* BCUnibicD - UniBic biclustering algorithm for discrete data
-* pairwiseLCS - calculates Longest Common Subsequence (LCS) between two vectors
-* calculateLCS - calculates multiple LCS within the dataset and prepares input for the cluster function
-* backtrackLCS - recovers the LCS from the matrix obtained using dynamic programming
-* cluster - seeds rows based based on the results obtained from calculateLCS
-* unisort - returns matrix of indexes based on the increasing order in each row
-* discretize - performs discretization using Fibonacci heap (sorting method used originally in UniBic)
+* `BCUnibic` - UniBic biclustering algorithm for continuous data
+* `BCUnibicD` - UniBic biclustering algorithm for discrete data
+* `pairwiseLCS` - calculates Longest Common Subsequence (LCS) between two vectors
+* `calculateLCS` - calculates multiple LCS within the dataset and prepares input for the cluster function
+* `backtrackLCS` - recovers the LCS from the matrix obtained using dynamic programming
+* `cluster` - seeds rows based based on the results obtained from calculateLCS
+* `unisort` - returns matrix of indexes based on the increasing order in each row
+* `discretize` - performs discretization using Fibonacci heap (sorting method used originally in UniBic)
 
 
 ## Installation
@@ -59,9 +59,9 @@ test
 ```
 
 Then, we run UniBic biclustering algorithm on the dataset.
-We use a [biclust::Biclust](https://cran.r-project.org/web/packages/biclust/biclust.pdf) package wrapper.
+We use a `Biclust` package wrapper.
 ```r
-res = biclust::biclust(test, method = BCUnibic())
+res <- biclust::biclust(test, method = BCUnibic())
 ```
 
 We can inspect the results returned by the method. Let's see how many biclusters were detected.
@@ -80,18 +80,17 @@ which(res@NumberxCol[3,])
 ```
 
 
-Visual analyses are very useful in biclustering. Let's draw the heatmap with the obtained bicluster.
+Visual analyses are very useful in biclustering. Let's draw the heatmap with the obtained bicluster using `drawHeatmap` function from `biclust` package.
 ```r
 drawHeatmap(test, res, 3)
 ```
 
-We could also present parallel coordinates plot of the bicluster.
+We could also present parallel coordinates plot of the bicluster with function `parallelCoordinates` from `biclust` package.
 ```r
-parallelCoordinates(test,res,3)
+parallelCoordinates(test, res, 3)
 ```
 
-Similarly the package could be used to find trends in discrete data.
-We run runiDiscretize
+Similarly the package could be used to find trends in discrete data. We run `runiDiscretize` function.
 ```r
 A <- runiDiscretize(replicate(10, rnorm(20)))
 A
@@ -104,8 +103,6 @@ BCUnibicD(A)
 
 
 
-
-
 ### Data provided by other packages
 This example presents how to use runibic package on a sample dataset.
 After loading all required libraries
@@ -113,31 +110,31 @@ After loading all required libraries
 library(runibic)
 library(biclust)
 ```
-we apply UniBic biclustering method to the sample yeast dataset from [biclust::Biclust](https://cran.r-project.org/web/packages/biclust/biclust.pdf) package.
+we apply UniBic biclustering method to the sample yeast dataset from `biclust` package.
 ```r
 data(BicatYeast)
-res = biclust(method=BCUnibic(),BicatYeast)
+res <- biclust(method = BCUnibic(), BicatYeast)
 ```
 
-The method has found 92 biclusters. Now we are going to analyze the results. We will start with drawing a heatmap of the first found bicluster.
+The method has found 92 biclusters. Now we are going to analyze the results. We will start with drawing a heatmap of the first found bicluster using `drawHeatmap` from `biclust` package.
 ```r
 drawHeatmap(BicatYeast, res, 1)
 ```
 
-Then we may check the result drawing the genes from the bicluster using parallel coordinates plot.
+Then we may check the result drawing the genes from the bicluster using parallel coordinates plot with `parallelCoordinates` function from `biclust` package.
 ```r
-parallelCoordinates(BicatYeast,res,1)
+parallelCoordinates(BicatYeast, res, 1)
 ```
 
 
 
 ### Summarized experiment
-The third application of runibic is using the algorithm on the dataset from an RNA-Seq experiment (SummarizedExperiment).
-We start with loading necessary packages (runibic, SummarizedExperiment) and load the airway dataset.
+The third application of runibic is using the algorithm on the dataset from an RNA-Seq experiment (`SummarizedExperiment`).
+We start with loading necessary packages (`runibic`, `SummarizedExperiment`) and load the airway dataset.
 ```r
 library(runibic)
 library(SummarizedExperiment)
-data(airway, package="airway")
+data(airway, package = "airway")
 ```
 
 We will take only a subset of the data to check if the method can return any patterns.
@@ -147,10 +144,10 @@ se <- airway[1:20,]
 
 Let's see if UniBic detects any pattern in the dataset.
 ```r
-res<- runibic(se)
+res <- runibic(se)
 ```
 
-The result could be visualized using parallelCoordinates method.
+The result could be visualized using `parallelCoordinates` method from `biclust` package.
 ```r
 parallelCoordinates(assays(se)[[1]], res[[1]], 2)
 ```
@@ -162,7 +159,8 @@ drawHeatmap(assays(se)[[1]], res[[1]], 2)
 
 ### Gene expression dataset
 Another very useful application of the runibic package is analyzing real dataset obtained from Gene Expression Omnibus (GEO).
-For this task we will use two packages: [GEOquery](http://bioconductor.org/packages/release/bioc/html/GEOquery.html) to download the data and [affy](http://bioconductor.org/packages/release/bioc/html/affy.html) to analyze the results.
+For this task we will use three packages: `getGEO` from `GEOquery` to download the data, `GDS2eSet` from `affy` to convert the dataset to `ExpressionSet` and finally 
+`exprs` to extract gene expression matrix.
 
 ```r
 library(GEOquery)
@@ -176,15 +174,15 @@ gse <- GEOquery::getGEO("GDS589", GSEMatrix = TRUE)
 Now we convert dataset to ExpressionSet and take subset of the dataset.
 ```r
 eset <- affy::GDS2eSet(gds)
-subset <-affy::exprs(eset)[1:100,]
+subset <- affy::exprs(eset)[1:100,]
 ```
 
-We perform analysis on first 100 of genes
+We perform analysis on first 100 of genes.
 ```r
 res <- runibic(subset)
 ```
 
-Finally, we draw the heatmap with the first bicluster.
+Finally, we draw the heatmap with the first bicluster using `drawHeatmap` function from `biclust` package.
 ```r
 drawHeatmap(subset, res, 1)
 ```
@@ -208,9 +206,9 @@ resPlaid <- biclust::biclust(BicatYeast, method = BCPlaid())
 resUni <- biclust::biclust(BicatYeast, method = BCUnibic())
 ```
 
-The results of clustering could be compared using showinfo method from QUBIC package.
+The results of clustering could be compared using `showinfo` from `QUBIC` package.
 ```r
-QUBIC::showinfo(BicatYeast,c(resCC, resBi, resPlaid, resQub, resUni))
+QUBIC::showinfo(BicatYeast, c(resCC, resBi, resPlaid, resQub, resUni))
 ```
 
 
@@ -220,19 +218,19 @@ The Longest Common Subsequence (LCS) between two vectors is the longest series o
 that is present in both analyzed vectors. 
 Let's prepare two vectors for the analysis.
 ```r
-A=c(1,2,1,5,4,3)
-B=c(2,1,3,2,1,4)
+A <- c(1, 2, 1, 5, 4, 3)
+B <- c(2, 1, 3, 2, 1, 4)
 ```
 You may notice that the values (1,2,4) are contained in both vectors:
 in vector A: (1,2,x,x,4,x) and in vector B: (x,1,x,2,x,4)
 
 
 Let's use the methods provided by the package to calculate the longest common subsequence.
-We first check which values are common for both vectors
+We first check which values are common for both vectors using `backtrackLCS`.
 ```r
 backtrackLCS(A,B)
 ```
-Then we calculate using dynamic programming the matrix for Longest Common Subsequence.
+Then we calculate using dynamic programming the matrix for Longest Common Subsequence with `pairwiselLCS`
 ```r
 pairwiseLCS(A,B)
 ```
@@ -242,31 +240,31 @@ pairwiseLCS(A,B)
 In our next example we will find the length of the longest common subsequence within the matrix
 We start with preparing input matrix.
 ```r
-A = matrix(c(11,17,12,10,8,9,19,15,18,13,14,7,4,6,16,2,3,1,5,20,
-    17,1,8,15,5,10,2,12,9,7,3,14,11,4,6,16,20,13,19,18,
-    15,8,17,12,18,14,19,11,16,20,10,13,6,3,7,9,1,2,5,4,
-    15,12,16,9,19,17,10,18,11,20,8,13,2,5,7,14,1,3,4,6,
-    15,10,9,6,13,19,7,18,16,17,14,4,3,1,2,20,12,5,11,8,
-    1,7,4,3,2,6,8,13,5,9,12,11,16,15,17,10,19,20,14,18,
-    10,5,3,9,2,11,6,13,8,1,7,4,16,14,15,12,18,17,20,19,
-    10,5,1,12,8,11,7,13,6,4,3,2,18,14,15,9,17,16,20,19,
-    9,6,3,10,1,12,7,13,8,2,5,4,16,14,15,11,19,17,20,18,
-    12,8,1,3,2,11,4,14,9,7,10,5,16,13,15,6,18,17,20,19), nrow=10, byrow=TRUE)
+A <-  matrix(c(11, 17, 12, 10, 8, 9, 19, 15, 18, 13, 14, 7, 4, 6, 16, 2, 3, 1, 5, 20, 
+    17, 1, 8, 15, 5, 10, 2, 12, 9, 7, 3, 14, 11, 4, 6, 16, 20, 13, 19, 18, 
+    15, 8, 17, 12, 18, 14, 19, 11, 16, 20, 10, 13, 6, 3, 7, 9, 1, 2, 5, 4, 
+    15, 12, 16, 9, 19, 17, 10, 18, 11, 20, 8, 13, 2, 5, 7, 14, 1, 3, 4, 6, 
+    15, 10, 9, 6, 13, 19, 7, 18, 16, 17, 14, 4, 3, 1, 2, 20, 12, 5, 11, 8, 
+    1, 7, 4, 3, 2, 6, 8, 13, 5, 9, 12, 11, 16, 15, 17, 10, 19, 20, 14, 18, 
+    10, 5, 3, 9, 2, 11, 6, 13, 8, 1, 7, 4, 16, 14, 15, 12, 18, 17, 20, 19, 
+    10, 5, 1, 12, 8, 11, 7, 13, 6, 4, 3, 2, 18, 14, 15, 9, 17, 16, 20, 19, 
+    9, 6, 3, 10, 1, 12, 7, 13, 8, 2, 5, 4, 16, 14, 15, 11, 19, 17, 20, 18, 
+    12, 8, 1, 3, 2, 11, 4, 14, 9, 7, 10, 5, 16, 13, 15, 6, 18, 17, 20, 19), nrow = 10, byrow = TRUE)
 ```
 
-We sort data in each row with the sorting function
+We sort data in each row with the function `unisort` provided by the `runibic` package.
 ```r
 unisort(A)
 ```
 
-Now we calculate the length of LCS between each pair of rows
+Now we calculate the length of LCS between each pair of rows using `calculateLCS`.
 ```r
-lcs=calculateLCS(A)
+lcs <- calculateLCS(A)
 ```
 
 We can check the length of the longest common subsequence (e.g. LCS between rows 6 and 7 is equal to 10).
 ```r
-list(a=lcs$a[2], b=lcs$b[2], lclen=lcs$lcslen[2])
+list(a = lcs$a[2], b = lcs$b[2], lclen = lcs$lcslen[2])
 ```
 
 
@@ -274,11 +272,11 @@ list(a=lcs$a[2], b=lcs$b[2], lclen=lcs$lcslen[2])
 
 First we create a random matrix
 ```r
-B=replicate(10, rnorm(10))
+B <- replicate(10, rnorm(10))
 B
 ```
 
-Discretization from UniBic could be applied in the following way:
+Discretization from UniBic could be applied using `runiDiscretize` function.
 ```r
 runiDiscretize(B)
 ```
@@ -287,14 +285,14 @@ runiDiscretize(B)
 The last example shows how to use cluster function from the package.
 After creating a matrix we sort values in each row and calculate LCS between all pairs of rows.
 ```r
-A = matrix(c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
-iA = unisort(A)
-lcsResults = calculateLCS(A)
+A <- matrix(c(4, 3, 1, 2, 5, 8, 6, 7, 9, 10, 11, 12), nrow = 4, byrow = TRUE)
+iA <- unisort(A)
+lcsResults <- calculateLCS(A)
 ```
 
-Finally, we apply the cluster function to inspect the results.
+Finally, we apply `cluster` function to inspect the results.
 ```r
-cluster(iA,A,lcsResults$lcslen,lcsResults$a, lcsResults$b,nrow(A),ncol(A))
+cluster(iA, A, lcsResults$lcslen, lcsResults$a, lcsResults$b, nrow(A), ncol(A))
 ```
 
 
