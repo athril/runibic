@@ -1,6 +1,8 @@
+Version 0.99.10
+Documentation to the package was updated.
+
 Version 0.99.9
 Including required biocViews. Refactoring R code.
-Improvements in documentation.
 
 Version 0.99.8
 Code optimizations.

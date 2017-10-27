@@ -8,10 +8,10 @@ vignette: >
     %\usepackage[UTF-8]{inputenc}
 ---
 
-# runibic: UniBic biclustering algorithm for R
+# runibic: parallel UniBic biclustering algorithm for R
 
-This package contains implementation of UniBic biclustering algorithm for gene expression data [Wang2016]
-The algorithm tries to locate trend-preserving biclusters within complex and noisy data.
+This package contains implementation of UniBic biclustering algorithm for gene expression data [Wang2016].
+The algorithm locates trend-preserving biclusters within complex and noisy data and is considered one of the most accurate among biclustering methods.
 
 ## Introduction 
 
@@ -137,7 +137,6 @@ We start with loading necessary packages (runibic, SummarizedExperiment) and loa
 ```r
 library(runibic)
 library(SummarizedExperiment)
-```r
 data(airway, package="airway")
 ```
 

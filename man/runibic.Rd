@@ -4,47 +4,77 @@
 \name{runibic}
 \alias{runibic}
 \alias{runibic-package}
+\alias{BCUnibic}
+\alias{BCUnibicD}
 \alias{runibic_d}
 \title{runibic: parallel row-based biclustering algorithm
 for analysis of gene expression data in R}
 \usage{
-runibic_d(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+BCUnibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 
-runibic(x, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+BCUnibicD(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+
+runibic_d(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+
+runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 }
 \arguments{
-\item{x}{numeric matrix or SummarizedExperiment}
+\item{x}{numeric or integer matrix (depends on the function)}
 
 \item{t}{consistency level of the block (0.5-1.0].}
 
 \item{q}{a double value for quantile discretization}
 
-\item{f}{filtering overlapping blocks, default 1(do not remove any blocks)}
+\item{f}{filtering overlapping blocks (default 1 do not remove any blocks)}
 
 \item{nbic}{maximum number of biclusters in output}
 
 \item{div}{number of ranks for up(down)-regulated genes: default: 0==ncol(x)}
 }
 \value{
-Biclust object with detected biclusters
+\code{\link[biclust]{Biclust}} object with detected biclusters
 }
 \description{
-runibic: parallel row-based biclustering algorithm
-for analysis of gene expression data in R
+\code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic. 
+The original method was reimplemented from C to C++11, OpenMP was added for parallelization.
 
-runibic_d
-
-runibic
+Each of the following functions \code{\link{BCUnibic}}, \code{\link{BCUnibicD}}, 
+\code{\link{runibic}}, \code{\link{runibic_d}} perform biclustering
+using UniBic biclustering algorithm. The major difference
+between the functions is that \code{\link{BCUnibicD}} (or \code{\link{runibic_d}}) 
+require a discretized matrix, whilst \code{\link{BCUnibic}} (or \code{\link{runibic}})
+could be applied to numeric one.
 }
 \section{Functions}{
 \itemize{
-\item \code{runibic_d}: biclustering algrorithm for discrete data
+\item \code{BCUnibic}: BCUnibic performs biclustering using UniBic on numeric matrix.
+It is intended to use as a method called from \code{\link[biclust]{biclust}}.
+
+\item \code{BCUnibicD}: perform biclustering using UniBic on integer matrix.
+It is intended to use as a method called from \code{\link[biclust]{biclust}}.
+
+\item \code{runibic_d}: perform biclustering using UniBic on integer matrix
+
+\item \code{runibic}: perform biclustering using UniBic on numeric matrix.
 }}
 
 \examples{
-A=matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
+A <- matrix(replicate(100, rnorm(100)), nrow=100, byrow=TRUE)
 runibic(A)
+BCUnibic(A)
+BCUnibic(A, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+B <- runiDiscretize(A)
+runibic(B)
+BCUnibicD(B, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+biclust::biclust(A, method=BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+biclust::biclust(B, method=BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+}
+\references{
+Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
+}
+\seealso{
+\code{\link{runiDiscretize}} \code{\link{set_runibic_params}} \code{\link{BCUnibic-class}} \code{\link{BCUnibicD-class}} \code{\link{unisort}}
 }
 \author{
-Patryk Orzechowski, Artur Pańszczyk
+Patryk Orzechowski \url{patryk.orzechowski@gmail.com}, Artur Pańszczyk \url{panszczyk.artur@gmail.com}
 }

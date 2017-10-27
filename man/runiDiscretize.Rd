@@ -14,7 +14,7 @@ a discretized matrix containing integers only
 }
 \description{
 This function discretizes the input matrix. 
-\code{runiDiscretize} uses paramaters: 'div' and 'q', 
+\code{\link{runiDiscretize}} uses paramaters: 'div' and 'q', 
 which are set by set_runibic_params function.
 The funtion returns a discrete matrix with given number of ranks 
 based on the parameter div. In contrast to biclust::discretize
@@ -25,12 +25,10 @@ is lower than 0.5 we use up(down)-regulated discretization divided
 into three parts.
 }
 \examples{
-A=replicate(10, rnorm(20))
+A <- replicate(10, rnorm(20))
 runiDiscretize(A)
 
 }
 \seealso{
-set_runibic_params
-
-[biclust::discretize](https://cran.r-project.org/web/packages/biclust/biclust.pdf)
+\code{\link{set_runibic_params}} \code{\link{calculateLCS}} \code{\link[biclust]{discretize}}
 }

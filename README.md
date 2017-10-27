@@ -5,8 +5,8 @@ The algorithm tries to locate trend-preserving biclusters within complex and noi
 
 ## Functions
 This package provides the following functions
-* BCUnibic - UniBic biclustering algorithm for continuous data
-* BCUnibicD - UniBic biclustering algorithm for discrete data
+* BCUnibic/runibic - UniBic biclustering algorithm for continuous data
+* BCUnibicD/runibic_d - UniBic biclustering algorithm for discrete data
 * pairwiseLCS - calculates Longest Common Subsequence (LCS) between two vectors
 * calculateLCS - calculates multiple LCS within the dataset and prepares input for the cluster function
 * backtrackLCS - recovers the LCS from the matrix obtained using dynamic programming

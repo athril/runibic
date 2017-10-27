@@ -21,9 +21,12 @@ set_runibic_params(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L)
 NULL (an empty value)
 }
 \description{
-Runibic function for setting parameters
+runibic function for setting parameters
 }
 \examples{
 set_runibic_params(0.85, 0, 1, 100, 0)
 
+}
+\seealso{
+\code{\link{runibic}}
 }

@@ -19,7 +19,9 @@ and returns a matrix in which the value in i-th row and j-th column
 represent the index of the j-th smallest value of the i-th row.
 }
 \examples{
-A=matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
+A <- matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
 unisort(A)
-
+}
+\seealso{
+\code{\link{runibic}} \code{\link{calculateLCS}} \code{\link{runiDiscretize}}
 }

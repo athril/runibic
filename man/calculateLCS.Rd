@@ -27,7 +27,9 @@ uses Fibonacci Heap used in original implementation of Unibic,
 the second one uses standard sorting algorithm from C++ STL.
 }
 \examples{
-A = matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
+A <- matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
 calculateLCS(A, TRUE)
-
+}
+\seealso{
+\code{\link{runibic}} \code{\link{backtrackLCS}}  \code{\link{pairwiseLCS}}
 }

@@ -5,6 +5,9 @@
 \alias{BCUnibicD-class}
 \title{Class BCUnibicD}
 \description{
-Class \code{BCUnibicD} defines UniBic biclustering algorithm
-for discrete input
+An S4 class \code{\link{BCUnibicD-class}} defines UniBic biclustering algorithm
+for discrete input.
+}
+\seealso{
+\code{\link{runibic}}
 }

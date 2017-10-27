@@ -12,7 +12,8 @@ backtrackLCS(x, y)
 \item{y}{an integer vector}
 }
 \value{
-an integer vector with the values of Longest Common Subsequence (LCS)
+an integer vector containing the the Longest Common Subsequence (LCS)
+between vectors x and y (i.e. the values that appear in both x and y in the same order)
 }
 \description{
 This function retrieves the Longest Common Subsequence (LCS)
@@ -20,8 +21,10 @@ between two integer vectors by backtracking the matrix
 obtained with dynamic programming.
 }
 \examples{
-A = c(1, 2, 3, 4, 5)
-B = c(1, 2, 4)
+A <- c(1, 2, 3, 4, 5)
+B <- c(1, 2, 4)
 backtrackLCS(A, B)
-
+}
+\seealso{
+\code{\link{runibic}} \code{\link{pairwiseLCS}} \code{\link{calculateLCS}}
 }

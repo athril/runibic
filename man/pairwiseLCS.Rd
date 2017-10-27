@@ -13,7 +13,8 @@ pairwiseLCS(x, y)
 \item{y}{an integer vector}
 }
 \value{
-a matrix storing Longest Common Subsequence (LCS)
+a matrix computed using dynamic programming
+that stores the Longest Common Subsequence (LCS) between two vectors A and B.
 }
 \description{
 This function calculates the matrix with Longest Common Subsequence (LCS)
@@ -21,8 +22,11 @@ between two numeric vectors. From given matrix we can locate the size
 of the Longest Common Subsequence in the last column in the last row.
 }
 \examples{
-A = c(1, 2, 3, 4, 5)
-B = c(1, 2, 4)
+A <- c(1, 2, 3, 4, 5)
+B <- c(1, 2, 4)
 pairwiseLCS(A, B)
 
+}
+\seealso{
+\code{\link{runibic}}  \code{\link{calculateLCS}} \code{\link{backtrackLCS}}
 }

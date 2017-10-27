@@ -36,14 +36,12 @@ between all rows in the input matrix. The paramteres of this function can be
 obtained from other functions provided by this package.
 }
 \examples{
-A = matrix( c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
-iA = unisort(A)
-lcsResults = calculateLCS(A)
+A <- matrix( c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+iA <- unisort(A)
+lcsResults <- calculateLCS(A)
 cluster(iA, A, lcsResults$lcslen, lcsResults$a, lcsResults$b, nrow(A), ncol(A))
 
 }
 \seealso{
-calculateLCS
-
-unisort
+\code{\link{runibic}} \code{\link{calculateLCS}} \code{\link{unisort}}
 }

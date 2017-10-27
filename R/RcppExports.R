@@ -3,7 +3,7 @@
 
 #' Set the parameters for runibic algorithm
 #'
-#' Runibic function for setting parameters
+#' runibic function for setting parameters
 #'
 #' @param t consistency level of the block (0.5-1.0] 
 #' @param q a double value for quantile discretization
@@ -12,6 +12,7 @@
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
 #' @return NULL (an empty value)
 #'
+#' @seealso \code{\link{runibic}}
 #' @examples
 #' set_runibic_params(0.85, 0, 1, 100, 0)
 #'
@@ -22,7 +23,7 @@ set_runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
 #' Discretize an input matrix 
 #'
 #' This function discretizes the input matrix. 
-#' \code{runiDiscretize} uses paramaters: 'div' and 'q', 
+#' \code{\link{runiDiscretize}} uses paramaters: 'div' and 'q', 
 #' which are set by set_runibic_params function.
 #' The funtion returns a discrete matrix with given number of ranks 
 #' based on the parameter div. In contrast to biclust::discretize
@@ -32,13 +33,12 @@ set_runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L) {
 #' is lower than 0.5 we use up(down)-regulated discretization divided
 #' into three parts.
 #' 
-#' @seealso set_runibic_params
-#' @seealso [biclust::discretize](https://cran.r-project.org/web/packages/biclust/biclust.pdf)
+#' @seealso \code{\link{set_runibic_params}} \code{\link{calculateLCS}} \code{\link[biclust]{discretize}}
 #' @param x a numeric matrix
 #' @return a discretized matrix containing integers only
 #'
 #' @examples
-#' A=replicate(10, rnorm(20))
+#' A <- replicate(10, rnorm(20))
 #' runiDiscretize(A)
 #'
 runiDiscretize <- function(x) {
@@ -56,8 +56,9 @@ runiDiscretize <- function(x) {
 #' of j-th smallest element in each row
 #'
 #' @examples
-#' A=matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
+#' A <- matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
 #' unisort(A)
+#' @seealso \code{\link{runibic}} \code{\link{calculateLCS}} \code{\link{runiDiscretize}}
 #'
 #' @export
 unisort <- function(x) {
@@ -73,11 +74,13 @@ unisort <- function(x) {
 #'
 #' @param x an integer vector
 #' @param y an integer vector
-#' @return a matrix storing Longest Common Subsequence (LCS)
+#' @return a matrix computed using dynamic programming
+#' that stores the Longest Common Subsequence (LCS) between two vectors A and B.
+#' @seealso \code{\link{runibic}}  \code{\link{calculateLCS}} \code{\link{backtrackLCS}}
 #'
 #' @examples
-#' A = c(1, 2, 3, 4, 5)
-#' B = c(1, 2, 4)
+#' A <- c(1, 2, 3, 4, 5)
+#' B <- c(1, 2, 4)
 #' pairwiseLCS(A, B)
 #'
 #' @export
@@ -93,12 +96,14 @@ pairwiseLCS <- function(x, y) {
 #'
 #' @param x an integer vector
 #' @param y an integer vector
-#' @return an integer vector with the values of Longest Common Subsequence (LCS)
+#' @return an integer vector containing the the Longest Common Subsequence (LCS)
+#' between vectors x and y (i.e. the values that appear in both x and y in the same order)
 #'
 #' @examples
-#' A = c(1, 2, 3, 4, 5)
-#' B = c(1, 2, 4)
+#' A <- c(1, 2, 3, 4, 5)
+#' B <- c(1, 2, 4)
 #' backtrackLCS(A, B)
+#' @seealso \code{\link{runibic}} \code{\link{pairwiseLCS}} \code{\link{calculateLCS}}
 #'
 #' @export
 backtrackLCS <- function(x, y) {
@@ -123,8 +128,9 @@ backtrackLCS <- function(x, y) {
 #' between all pairs of rows
 #'
 #' @examples
-#' A = matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
+#' A <- matrix(c(4, 3, 1, 2, 5, 8, 6, 7), nrow=2, byrow=TRUE)
 #' calculateLCS(A, TRUE)
+#' @seealso \code{\link{runibic}} \code{\link{backtrackLCS}}  \code{\link{pairwiseLCS}}
 #'
 #' @export
 calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
@@ -139,8 +145,7 @@ calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
 #' and the results from calculations of Longest Common Subsequence 
 #' between all rows in the input matrix. The paramteres of this function can be
 #' obtained from other functions provided by this package.
-#' @seealso calculateLCS
-#' @seealso unisort
+#' @seealso \code{\link{runibic}} \code{\link{calculateLCS}} \code{\link{unisort}}
 #'
 #' @param discreteInput an integer matrix with indices of sorted columns
 #' @param discreteInputValues an integer matrix with discrete values
@@ -154,9 +159,9 @@ calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
 #' @return a list with information of found biclusters
 #'
 #' @examples
-#' A = matrix( c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
-#' iA = unisort(A)
-#' lcsResults = calculateLCS(A)
+#' A <- matrix( c(4,3,1,2,5,8,6,7,9,10,11,12),nrow=4,byrow=TRUE)
+#' iA <- unisort(A)
+#' lcsResults <- calculateLCS(A)
 #' cluster(iA, A, lcsResults$lcslen, lcsResults$a, lcsResults$b, nrow(A), ncol(A))
 #'
 #' @export
