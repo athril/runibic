@@ -4,15 +4,17 @@ This package contains implementation of UniBic biclustering algorithm for gene e
 The algorithm tries to locate trend-preserving biclusters within complex and noisy data.
 
 ## Functions
-This package provides the following functions
-* `BCUnibic`/`runibic` - UniBic biclustering algorithm for continuous data
-* `BCUnibicD` - UniBic biclustering algorithm for discrete data
-* `pairwiseLCS - calculates Longest Common Subsequence (LCS) between two vectors
-* `calculateLCS - calculates multiple LCS within the dataset and prepares input for the cluster function
-* `backtrackLCS - recovers the LCS from the matrix obtained using dynamic programming
-* `cluster` - seeds rows based based on the results obtained from calculateLCS
+This package provides the following main functions:
+* `BCUnibic`/`runibic` - parallel UniBic for continuous data
+* `BCUnibicD` - parallel UniBic for discrete data
+
+The package provides some additional functions:
+* `pairwiseLCS` - calculates Longest Common Subsequence (LCS) between two vectors
+* `calculateLCS` - calculates LCSes between all pairs of the input dataset
+* `backtrackLCS` - recovers LCS from the dynamic programming matrix
+* `cluster` - main part of UniBic algorithm (biclusters seeding and expanding)
 * `unisort` - returns matrix of indexes based on the increasing order in each row
-* `discretize` - performs discretization using Fibonacci heap (sorting method used originally in UniBic)
+* `discretize` - performs discretization using Fibonacci heap (sorting method used originally in UniBic) or standard sorting
 
 
 ## Installation
@@ -46,8 +48,36 @@ res<- runibic(se)
 parallelCoordinates(assays(se)[[1]], res[[1]], 2)
 ```
 
-### Tutorial
+## Tutorial
 Please check [runibic tutorial](https://github.com/athril/runibic/tree/master/vignettes/runibic.Rmd)
+
+## Citation
+For the original sequential version of the UniBic please use the following citation:
+
+**Zhenjia Wang, Guojun Li, Robert W. Robinson, Xiuzhen Huang
+*UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data*
+Scientific Reports 6, 2016; 23466, doi: https://doi:10.1038/srep23466**
+
+
+If you use in your work this package with parallel version of UniBic please use the following citation:
+
+**Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang Jason H. Moore:
+*runibic: a Bioconductor package for parallel row-based biclustering of gene expression data*
+bioRxiv, 2017; 210682, doi: [https://doi.org/10.1101/210682](https://doi.org/10.1101/210682)**
+
+BibTex entry:
+```
+@article{orzechowski2017runibic,
+  title={runibic: a Bioconductor package for parallel row-based biclustering of gene expression data},
+  author={Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore},
+  journal={bioRxiv},
+  pages={210682}
+  year={2017},
+  publisher={Cold Spring Harbor Laboratory},
+  doi={https://doi.org/10.1101/210682}
+}
+```
+
 
 ## References
 * [Wang2016] Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.

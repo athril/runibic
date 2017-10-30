@@ -65,7 +65,7 @@ unisort <- function(x) {
     .Call('_runibic_unisort', PACKAGE = 'runibic', x)
 }
 
-#' Calculating a matrix of Longest Common Subsequence (LCS) 
+#' Calculate a matrix of Longest Common Subsequence (LCS) 
 #' between a pair of numeric vectors
 #'
 #' This function calculates the matrix with Longest Common Subsequence (LCS)
@@ -137,7 +137,7 @@ calculateLCS <- function(discreteInput, useFibHeap = TRUE) {
     .Call('_runibic_calculateLCS', PACKAGE = 'runibic', discreteInput, useFibHeap)
 }
 
-#' Calculating biclusters from sorted list of LCS scores and row indices
+#' Calculate biclusters from sorted list of LCS scores and row indices
 #'
 #' This function search for biclusters in the input matrix. 
 #' The calculations are based on the integer matrix with indexes 

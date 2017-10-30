@@ -32,8 +32,14 @@ runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 \code{\link[biclust]{Biclust}} object with detected biclusters
 }
 \description{
-\code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic. 
+\code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic.
 The original method was reimplemented from C to C++11, OpenMP was added for parallelization.
+
+If you use this package, please cite it as:
+Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore:
+"runibic: a Bioconductor package for parallel row-based biclustering of gene expression data";
+\emph{bioRxiv}, 2017,
+doi: https://doi.org/10.1101/210682
 
 Each of the following functions \code{\link{BCUnibic}}, \code{\link{BCUnibicD}}, 
 \code{\link{runibic}} perform biclustering
@@ -81,6 +87,8 @@ biclust::biclust(B, method=BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div 
 }
 \references{
 Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
+
+Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore: "runibic: a Bioconductor package for parallel row-based biclustering of gene expression data", bioRxiv (2017): 210682, doi: https://doi.org/10.1101/210682
 }
 \seealso{
 \code{\link{runiDiscretize}} \code{\link{set_runibic_params}} \code{\link{BCUnibic-class}} \code{\link{BCUnibicD-class}} \code{\link{unisort}}

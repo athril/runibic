@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{cluster}
 \alias{cluster}
-\title{Calculating biclusters from sorted list of LCS scores and row indices}
+\title{Calculate biclusters from sorted list of LCS scores and row indices}
 \usage{
 cluster(discreteInput, discreteInputValues, scores, geneOne, geneTwo, rowNumber,
   colNumber)

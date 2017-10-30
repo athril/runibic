@@ -1,0 +1,42 @@
+citHeader("For the sequential and parallel versions of UniBic biclustering algorithm please use the following citations:")
+
+
+citEntry(entry = "Article",
+  title        = "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data.",
+  author       = personList(as.person("Zhenjia Wang"),
+                   as.person("Guojun Li"),
+                   as.person("Robert W. Robinson"),
+                   as.person("Xiuzhen Huang")),
+  journal      = "Scientific Reports",
+  volume       = "6",
+  year         = "2016",
+  pages        = "23466",
+  doi          = "doi:10.1038/srep23466",
+
+  textVersion  =
+  paste("Zhenjia Wang, Guojun Li, Robert W. Robinson, Xiuzhen Huang;",
+        "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data.",
+        "Scientific Reports 6, 2016; Article number: 23466",
+        "doi: https://doi:10.1038/srep23466")
+)
+
+citEntry(entry = "Article",
+  title        = "{runibic}: a Bioconductor package for parallel row-based biclustering of gene expression data.",
+  author       = personList(as.person("Patryk Orzechowski"),
+                   as.person("Artur Pańszczyk"),
+                   as.person("Xiuzhen Huang"),
+                   as.person("Jason H. Moore")),
+  journal      = "bioRxiv",
+  year         = "2017",
+  pages        = "210682",
+  doi          = "https://doi.org/10.1101/210682",
+
+  textVersion  =
+  paste("Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore;",
+        "runibic: a Bioconductor package for parallel row-based biclustering of gene expression data",
+        "bioRxiv, 2017; 210682",
+        "doi: https://doi.org/10.1101/210682")
+)
+
+
+citFooter("If you found runibic package useful in your work, please use both or at least the second citation.")

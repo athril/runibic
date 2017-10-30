@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{pairwiseLCS}
 \alias{pairwiseLCS}
-\title{Calculating a matrix of Longest Common Subsequence (LCS) 
+\title{Calculate a matrix of Longest Common Subsequence (LCS) 
 between a pair of numeric vectors}
 \usage{
 pairwiseLCS(x, y)

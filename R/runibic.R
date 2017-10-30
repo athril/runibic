@@ -12,8 +12,14 @@
 #' @export runibic
 #' @export BCUnibic
 #' @export BCUnibicD
-#' @description \code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic. 
+#' @description \code{\link{runibic}} is a package that contains much faster parallel version of one of the most accurate biclustering algorithms, UniBic.
 #' The original method was reimplemented from C to C++11, OpenMP was added for parallelization.
+#'
+#' If you use this package, please cite it as:
+#' Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore:
+#' "runibic: a Bioconductor package for parallel row-based biclustering of gene expression data";
+#' \emph{bioRxiv}, 2017,
+#' doi: https://doi.org/10.1101/210682
 #'
 #' @details
 #' For a given input matrix we first perform discretization and create index matrix using \code{\link{runiDiscretize}} function.
@@ -31,6 +37,7 @@
 #' \code{\link{BCUnibicD}} could be applied to integer ones. The latter two methods are compatible with \code{\link[biclust]{Biclust}} class.
 #'
 #' @references Wang, Zhenjia, et al. "UniBic: Sequential row-based biclustering algorithm for analysis of gene expression data." Scientific reports 6 (2016): 23466.
+#' @references Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore: "runibic: a Bioconductor package for parallel row-based biclustering of gene expression data", bioRxiv (2017): 210682, doi: https://doi.org/10.1101/210682
 NULL
 
 
