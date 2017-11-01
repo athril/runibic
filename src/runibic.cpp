@@ -324,7 +324,6 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
   gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
 
   Rcpp::IntegerMatrix discreteInputIndex = unisort(discreteInput);
-
   vector<vector<int>> discreteInputData(discreteInputIndex.nrow());
 
   for (auto i = 0; i < discreteInputData.size(); i++) {
@@ -348,16 +347,14 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
   int size = (PART-1)*(step*(step-1)/2);
   int rest = step+(discreteInputIndex.nrow()%PART);
   size+= rest*(rest-1)/2;
-
   vector<triple> out;
   out.reserve(size);
-
+  
   internalCalulateLCS(discreteInputData,out, useFibHeap);
-
   Rcpp::IntegerVector geneA(out.size());
   Rcpp::IntegerVector geneB(out.size());
   Rcpp::IntegerVector lcslen(out.size());
-
+   
   for(auto i = 0; i < out.size(); i++)
   {
     geneA(i) = out[i].geneA;

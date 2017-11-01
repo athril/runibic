@@ -49,11 +49,11 @@ int edge_cmpr(void *a, void *b)
   return 1;
 }
 
-bool is_higher(const triple* x, const triple* y) {
-  if (x->lcslen > y->lcslen)
+bool is_higher(const triple& x, const triple& y) {
+  if (x.lcslen > y.lcslen)
     return true;
-  if (x->lcslen == y->lcslen)
-    return (x->geneA<y->geneB);
+  if (x.lcslen == y.lcslen)
+    return (x.geneA<y.geneB);
   return false;
 }
 
@@ -359,10 +359,13 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
   int size = (PART-1)*(step*(step-1)/2);
   int rest = step+(inputMatrix.size()%PART);
   size+= rest*(rest-1)/2;
-  triple** triplets = new triple*[size];
-  struct fibheap *heap;
-  heap = fh_makeheap();
-  fh_setcmp(heap, edge_cmpr);
+  vector<triple> triplets(size);
+  struct fibheap *heap = NULL;
+  if(useFib){
+    heap = fh_makeheap();
+    fh_setcmp(heap, edge_cmpr);
+  }
+ 
  
 // TODO: change into parallel version
 // there should be 1-level for loop across all combinations of pairs of rows
@@ -370,9 +373,10 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
 //  for ( auto k=0; k<size; k++ ) {
 //    auto i = k/discreteInput.nrow(); auto j=k%discreteInput.nrow(); 
   //triple __cur_min = {0, 0, po->COL_WIDTH};
-  triple __cur_min = {0, 0, gParameters.ColWidth};
+  triple __cur_min;
+  __cur_min.lcslen = gParameters.ColWidth;
   triple *_cur_min = &__cur_min;
-  triple **cur_min = & _cur_min;
+  triple **cur_min = &_cur_min;;
   int k=0;
   for(auto p = 0; p < PART; p++){
     auto endi = (p+1)*step;
@@ -380,37 +384,36 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
       endi = inputMatrix.size();
     for (auto i=p*step; i<endi; i++) {
       for (auto j=i+1; j<endi; j++) {
-        triplets[k] = new triple;
-        triplets[k]->geneA = i;
-        triplets[k]->geneB = j;
+        triplets[k].geneA = i;
+        triplets[k].geneB = j;
         k++;
       }
     }
   }
 #pragma omp parallel for shared(triplets) schedule(dynamic)
   for(auto p = 0; p < k; p++){
-    vector<int> a = inputMatrix[triplets[p]->geneA];
-    vector<int> b = inputMatrix[triplets[p]->geneB];
+    vector<int> a = inputMatrix[triplets[p].geneA];
+    vector<int> b = inputMatrix[triplets[p].geneB];
     vector< vector<int> > res(a.size()+1);
     internalPairwiseLCS(a,b,res);
-    triplets[p]->lcslen= res[a.size()][b.size()];
+    triplets[p].lcslen= res[a.size()][b.size()];
   }
   if(useFib){
       for(auto p = 0; p < k; p++){
-        if (triplets[p]->lcslen < ((*cur_min)->lcslen)){
+        if (triplets[p].lcslen < ((*cur_min)->lcslen)){
           continue;
         } 
         if (heap->fh_n < HEAP_SIZE) 
         {
-          fh_insert(heap, (void *)triplets[p]);
+          fh_insert(heap, (void *)&triplets[p]);
         }
       else
       {
-        if (edge_cmpr(cur_min, triplets[p]) < 0)
+        if (edge_cmpr(cur_min, &triplets[p]) < 0)
         {
           /* Remove least value and renew */
           fh_extractmin(heap);
-          fh_insert(heap, (void *)triplets[p]);
+          fh_insert(heap, (void *)&triplets[p]);
           /* Keep a memory of the current min */
           *cur_min = (triple *)fh_min(heap);
         }
@@ -421,17 +424,15 @@ void internalCalulateLCS(std::vector<std::vector<int>> &inputMatrix, std::vector
       out.push_back(*res);
     }
     reverse(out.begin(), out.end());
+    free(heap);
+    heap = NULL;
   }
   else  {
-    sort( triplets, triplets+size, &is_higher);
-    for (int i=0; i<size; i++) {
-      out.push_back(*(triplets[i]));
-    }
+    stable_sort( triplets.begin(), triplets.end(), &is_higher);
+    out.insert(out.end(), triplets.begin(), triplets.end());
   }
-  for(int i=0;i <size; i++)
-    delete triplets[i];
-  delete[] triplets;
-  free(heap);
+  triplets.clear();
+  vector<triple>().swap(triplets);
 }
 
 bool blockComp(BicBlock*lhs, BicBlock* rhs) {
