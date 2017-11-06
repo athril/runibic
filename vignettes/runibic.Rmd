@@ -24,10 +24,12 @@ Our major contributions are reimplementing the method into more modern C++11 lan
 
 ## Functions
 This package provides the following main functions:
+
 * `BCUnibic`/`runibic` - parallel UniBic for continuous data
 * `BCUnibicD` - parallel UniBic for discrete data
 
 The package provides some additional functions:
+
 * `pairwiseLCS` - calculates Longest Common Subsequence (LCS) between two vectors
 * `calculateLCS` - calculates LCSes between all pairs of the input dataset (Fibonacci heap or standard sort)
 * `backtrackLCS` - recovers LCS from the dynamic programming matrix
