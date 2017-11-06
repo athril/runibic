@@ -95,6 +95,9 @@ struct triple {
   int geneA;
   int geneB;
   int lcslen;
+  triple(): geneA(0)
+  , geneB(0)
+  , lcslen(0){};
 };
 static const int HEAP_SIZE = 20000000;
 
