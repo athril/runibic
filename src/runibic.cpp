@@ -53,7 +53,7 @@ Params gParameters;
 //' @param f filtering overlapping blocks, default 1(do not remove any blocks)
 //' @param nbic maximum number of biclusters in output
 //' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
-//' @param useLegacy boolean value for skiping 0 in LCS
+//' @param useLegacy boolean value for legacy parameters management
 //' @return NULL (an empty value)
 //'
 //' @seealso \code{\link{runibic}}
@@ -430,7 +430,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       } 
     }
   }
-  
+
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
 
