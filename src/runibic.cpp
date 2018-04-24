@@ -53,14 +53,15 @@ Params gParameters;
 //' @param f filtering overlapping blocks, default 1(do not remove any blocks)
 //' @param nbic maximum number of biclusters in output
 //' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
+//' @param useLegacy boolean value for skiping 0 in LCS
 //' @return NULL (an empty value)
 //'
 //' @seealso \code{\link{runibic}}
 //' @examples
-//' set_runibic_params(0.85, 0, 1, 100, 0)
+//' set_runibic_params(0.85, 0, 1, 100, 0, false)
 //'
 // [[Rcpp::export]]
-void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 100, int div = 0)
+void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 100, int div = 0, bool useLegacy = false)
 {
   gParameters.Tolerance=t;
   gParameters.Quantile = q;
@@ -68,6 +69,7 @@ void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 
   gParameters.RptBlock = nbic;
   gParameters.SchBlock = 2*gParameters.RptBlock;
   gParameters.Divided = div;
+  gParameters.UseLegacy = useLegacy;
 }
 
 
@@ -325,7 +327,6 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 
   Rcpp::IntegerMatrix discreteInputIndex = unisort(discreteInput);
   vector<vector<int>> discreteInputData(discreteInputIndex.nrow());
-
   for (auto i = 0; i < discreteInputData.size(); i++) {
     if(gParameters.Quantile < 0.5){
       //(*it).reserve(discreteInput.ncol());
@@ -429,6 +430,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       } 
     }
   }
+  
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
 
@@ -514,7 +516,8 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     for (auto ki=0; ki < vecGenes.size() ; ki++) {
       candidates[vecGenes[ki]] = false;
     }
-
+    if(k<vecGenes.size())
+      candidates[vecGenes[k]]=false;
     // set for column candidates
     set<size_t> colcand;
 
@@ -555,6 +558,8 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     // count number of occurances of candidates in results of lcs
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
+      if(!candidates[ki])
+        continue;
       if(candidates[ki])
         m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
       //check if this candidate can be added

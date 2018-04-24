@@ -43,7 +43,8 @@ public:
   , Shuffle(0)
   , Divided(0)
   , RowNumber(0)
-  , ColNumber(0){};
+  , ColNumber(0)
+  , UseLegacy(false){};
   int RowNumber;
   int ColNumber;
   bool IsDiscrete;
@@ -58,23 +59,34 @@ public:
   int Shuffle;
   int ColWidth;
   int Divided;
+  bool UseLegacy;
   void InitOptions(int rowNum, int colNum){
     RowNumber = rowNum;
     ColNumber = colNum;
     ColWidth = std::max(3+floor(colNum/30),4.0);
+
     if(Divided==0) {
-      if(rowNum > 2000) {
+      if(UseLegacy){
+        if(rowNum > 2000) {
+          Divided = 15;
+        }
+        else {
+          Divided = colNum;
+        }
+      }
+      else
         Divided = 15;
-      }
-      else {
-        Divided = colNum;
-      }
+      
     }
     if(Quantile == 0){
-      if(rowNum > 2000)
-        Quantile = ((int)(15.0/(colNum*1.0)*100+0.5))/100.0;
-      else
-        Quantile = 0.5;
+       if(UseLegacy){
+        if(rowNum > 2000)
+          Quantile = ((int)(15.0/(colNum*1.0)*100+0.5))/100.0;
+        else
+          Quantile = 0.5;
+       }
+       else
+          Quantile = ((int)(15.0/(colNum*1.0)*100+0.5))/100.0;      
     }
   }
 };
