@@ -1,4 +1,4 @@
-Version 1.0.2
+Version 1.0.3
 Fix: modification of default parameters for small datasets in order to keep consistency between different sizes of the input.
 
 Version 1.0.1
