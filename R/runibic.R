@@ -70,10 +70,10 @@ setClass(Class = "BCUnibicD", contains = "BiclustMethod",
 
 #' @describeIn runibic \code{\link{BCUnibic}} performs biclustering using UniBic on numeric matrix.
 #' It is intended to use as a method called from \code{\link[biclust]{biclust}}.
-BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
+BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     if (is.null(x))
         return(methods::new("BCUnibic"))
-    res <- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+    res <- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE)
     res@Parameters$Call <- match.call()
     return (res);
 }
@@ -81,18 +81,19 @@ BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 
 #' @describeIn runibic perform biclustering using UniBic on integer matrix.
 #' It is intended to use as a method called from \code{\link[biclust]{biclust}}.
-BCUnibicD <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
+BCUnibicD <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     if (is.null(x))
         return(methods::new("BCUnibicD"))
-    res <- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+    res <- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE)
     res@Parameters$Call <- match.call()
     return (res);
 }
 
 
-runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
+runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     MYCALL <- match.call()
-
+    
+    set_runibic_params(t, q, f, nbic, div, useLegacy)
     iX <- unisort(x)
     LCSRes <- calculateLCS(x, TRUE)
     res <- cluster(iX, x, LCSRes$lcslen, LCSRes$a, LCSRes$b, nrow(x), ncol(x) )
@@ -100,10 +101,6 @@ runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
         matrix(unlist(res["NumberxCol"]), nrow = as.numeric(res["Number"]), byrow = FALSE), as.numeric(res["Number"]),
         res["info"]))
 }
-
-
-
-
 #' runibic
 #'
 #' Each of the following functions \code{\link{BCUnibic}}, \code{\link{BCUnibicD}}, 
@@ -119,9 +116,10 @@ runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' @param f filtering overlapping blocks (default 1 do not remove any blocks)
 #' @param nbic maximum number of biclusters in output
 #' @param div number of ranks for up(down)-regulated genes: default: 0==ncol(x)
+#' @param useLegacy boolean value for using legacy parameter settings
 #' @return \code{\link[biclust]{Biclust}} object with detected biclusters
 #'
-#' @usage runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy=FALSE)
 #' @seealso \code{\link{runiDiscretize}} \code{\link{set_runibic_params}} \code{\link{BCUnibic-class}} \code{\link{BCUnibicD-class}} \code{\link{unisort}}
 #' @describeIn runibic perform biclustering using UniBic on numeric matrix.
 #'
@@ -135,12 +133,12 @@ runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
 #' BCUnibicD(B, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 #' biclust::biclust(A, method=BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 #' biclust::biclust(B, method=BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
-runibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0) {
+runibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     if(inherits(x,"SummarizedExperiment")){
         x_d <- lapply(assays(x), runiDiscretize)
         return (lapply(x_d, runibic_d, t, q, f, nbic, div))
     }
-    set_runibic_params(t, q, f, nbic, div)
+    set_runibic_params(t, q, f, nbic, div, useLegacy)
     x_d <- runiDiscretize(x)
     return(runibic_d(x_d, t, q, f, nbic, div))
 }

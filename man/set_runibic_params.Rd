@@ -4,7 +4,8 @@
 \alias{set_runibic_params}
 \title{Set the parameters for runibic algorithm}
 \usage{
-set_runibic_params(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L)
+set_runibic_params(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L,
+  useLegacy = FALSE)
 }
 \arguments{
 \item{t}{consistency level of the block (0.5-1.0]}
@@ -16,6 +17,8 @@ set_runibic_params(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L)
 \item{nbic}{maximum number of biclusters in output}
 
 \item{div}{number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)}
+
+\item{useLegacy}{boolean value for legacy parameters management}
 }
 \value{
 NULL (an empty value)
@@ -24,7 +27,7 @@ NULL (an empty value)
 runibic function for setting parameters
 }
 \examples{
-set_runibic_params(0.85, 0, 1, 100, 0)
+set_runibic_params(0.85, 0, 1, 100, 0, FALSE)
 
 }
 \seealso{

@@ -219,7 +219,7 @@ void block_init(int score, int geneOne, int geneTwo, BicBlock *block, std::vecto
       if(res==lcsTags[max_i].end())
         it = colcand.erase(it);
       else
-        it++;
+        ++it;
     }
     candidates[max_i] = FALSE;
   }
@@ -252,22 +252,22 @@ std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> co
     B[0][j] = 0; 
   }
   /************DP*****************************/
-  for(auto i=1; i<s1.size()+1; i++) {
+    for(auto i=1; i<s1.size()+1; i++) {
     for(auto j=1; j<s2.size()+1; j++) {
-      if(s1[i-1] == s2[j-1]) {
-        C[i][j] = C[i-1][j-1] + 1;
-        B[i][j] = 1;
-      }
-      else if(C[i-1][j] >= C[i][j-1]) {
-        C[i][j] = C[i-1][j];
-        B[i][j] = 2;
-      }
-      else {
-        C[i][j] = C[i][j-1];
-        B[i][j] = 3;
+        if(s1[i-1] == s2[j-1]) {
+          C[i][j] = C[i-1][j-1] + 1;
+          B[i][j] = 1;
+        }
+        else if(C[i-1][j] >= C[i][j-1]) {
+          C[i][j] = C[i-1][j];
+          B[i][j] = 2;
+        }
+        else {
+          C[i][j] = C[i][j-1];
+          B[i][j] = 3;
+        }
       }
     }
-  }
   maxvalue = C[s1.size()][s2.size()];
   
   for (auto j=1;j<s2.size()+1;j++) {
@@ -342,13 +342,13 @@ void internalPairwiseLCS(std::vector<int> &x, std::vector<int> &y, std::vector<s
     c[0][j]=0;
   }
   for(auto i=1; i<x.size()+1; i++) {
-    for(auto j=1; j<y.size()+1; j++) {
-      if(x[i-1] == y[j-1]) {
-        c[i][j] = c[i-1][j-1] + 1;
-      }
-      else {
-        c[i][j] = std::max(c[i][j-1],c[i-1][j]);
-      }
+      for(auto j=1; j<y.size()+1; j++) {
+        if(x[i-1] == y[j-1]) {
+          c[i][j] = c[i-1][j-1] + 1;
+        }
+        else {
+          c[i][j] = std::max(c[i][j-1],c[i-1][j]);
+        }
     }
   }
 }

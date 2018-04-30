@@ -6,14 +6,17 @@
 \alias{runibic-package}
 \alias{BCUnibic}
 \alias{BCUnibicD}
+\alias{runibic}
 \title{runibic: parallel row-based biclustering algorithm
 for analysis of gene expression data in R}
 \usage{
-BCUnibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+BCUnibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,
+  useLegacy = FALSE)
 
-BCUnibicD(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+BCUnibicD(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,
+  useLegacy = FALSE)
 
-runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy=FALSE)
 }
 \arguments{
 \item{x}{numeric or integer matrix (depends on the function)}
@@ -27,6 +30,8 @@ runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
 \item{nbic}{maximum number of biclusters in output}
 
 \item{div}{number of ranks for up(down)-regulated genes: default: 0==ncol(x)}
+
+\item{useLegacy}{boolean value for using legacy parameter settings}
 }
 \value{
 \code{\link[biclust]{Biclust}} object with detected biclusters

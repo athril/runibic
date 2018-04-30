@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // set_runibic_params
-void set_runibic_params(double t, double q, double f, int nbic, int div);
-RcppExport SEXP _runibic_set_runibic_params(SEXP tSEXP, SEXP qSEXP, SEXP fSEXP, SEXP nbicSEXP, SEXP divSEXP) {
+void set_runibic_params(double t, double q, double f, int nbic, int div, bool useLegacy);
+RcppExport SEXP _runibic_set_runibic_params(SEXP tSEXP, SEXP qSEXP, SEXP fSEXP, SEXP nbicSEXP, SEXP divSEXP, SEXP useLegacySEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type t(tSEXP);
@@ -15,7 +15,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type f(fSEXP);
     Rcpp::traits::input_parameter< int >::type nbic(nbicSEXP);
     Rcpp::traits::input_parameter< int >::type div(divSEXP);
-    set_runibic_params(t, q, f, nbic, div);
+    Rcpp::traits::input_parameter< bool >::type useLegacy(useLegacySEXP);
+    set_runibic_params(t, q, f, nbic, div, useLegacy);
     return R_NilValue;
 END_RCPP
 }
@@ -96,7 +97,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_runibic_set_runibic_params", (DL_FUNC) &_runibic_set_runibic_params, 5},
+    {"_runibic_set_runibic_params", (DL_FUNC) &_runibic_set_runibic_params, 6},
     {"_runibic_runiDiscretize", (DL_FUNC) &_runibic_runiDiscretize, 1},
     {"_runibic_unisort", (DL_FUNC) &_runibic_unisort, 1},
     {"_runibic_pairwiseLCS", (DL_FUNC) &_runibic_pairwiseLCS, 2},
