@@ -10,12 +10,12 @@
 #' @param f filtering overlapping blocks, default 1(do not remove any blocks)
 #' @param nbic maximum number of biclusters in output
 #' @param div number of ranks as which we treat the up(down)-regulated value: default: 0==ncol(x)
-#' @param skipZero boolean value for skiping 0 in LCS
+#' @param useLegacy boolean value for legacy parameters management
 #' @return NULL (an empty value)
 #'
 #' @seealso \code{\link{runibic}}
 #' @examples
-#' set_runibic_params(0.85, 0, 1, 100, 0, false)
+#' set_runibic_params(0.85, 0, 1, 100, 0, FALSE)
 #'
 set_runibic_params <- function(t = 0.85, q = 0, f = 1, nbic = 100L, div = 0L, useLegacy = FALSE) {
     invisible(.Call('_runibic_set_runibic_params', PACKAGE = 'runibic', t, q, f, nbic, div, useLegacy))

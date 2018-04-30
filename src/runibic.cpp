@@ -58,7 +58,7 @@ Params gParameters;
 //'
 //' @seealso \code{\link{runibic}}
 //' @examples
-//' set_runibic_params(0.85, 0, 1, 100, 0, false)
+//' set_runibic_params(0.85, 0, 1, 100, 0, FALSE)
 //'
 // [[Rcpp::export]]
 void set_runibic_params(double t = 0.85, double q = 0, double f = 1, int nbic = 100, int div = 0, bool useLegacy = false)

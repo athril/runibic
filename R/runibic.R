@@ -70,7 +70,7 @@ setClass(Class = "BCUnibicD", contains = "BiclustMethod",
 
 #' @describeIn runibic \code{\link{BCUnibic}} performs biclustering using UniBic on numeric matrix.
 #' It is intended to use as a method called from \code{\link[biclust]{biclust}}.
-BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useLegacy = FALSE) {
+BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     if (is.null(x))
         return(methods::new("BCUnibic"))
     res <- biclust(x = x, method = BCUnibic(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE)
@@ -81,16 +81,16 @@ BCUnibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useLe
 
 #' @describeIn runibic perform biclustering using UniBic on integer matrix.
 #' It is intended to use as a method called from \code{\link[biclust]{biclust}}.
-BCUnibicD <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useLegacy = FALSE) {
+BCUnibicD <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     if (is.null(x))
         return(methods::new("BCUnibicD"))
-    res <- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useLegacy = FALSE)
+    res <- biclust(x = x, method = BCUnibicD(), t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE)
     res@Parameters$Call <- match.call()
     return (res);
 }
 
 
-runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useLegacy = FALSE) {
+runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy = FALSE) {
     MYCALL <- match.call()
     
     set_runibic_params(t, q, f, nbic, div, useLegacy)
@@ -119,7 +119,7 @@ runibic_d <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0,useL
 #' @param useLegacy boolean value for using legacy parameter settings
 #' @return \code{\link[biclust]{Biclust}} object with detected biclusters
 #'
-#' @usage runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0)
+#' @usage runibic(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLegacy=FALSE)
 #' @seealso \code{\link{runiDiscretize}} \code{\link{set_runibic_params}} \code{\link{BCUnibic-class}} \code{\link{BCUnibicD-class}} \code{\link{unisort}}
 #' @describeIn runibic perform biclustering using UniBic on numeric matrix.
 #'

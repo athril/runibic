@@ -1,7 +1,7 @@
 Package: runibic
 Type: Package
 Title: runibic: row-based biclustering algorithm for analysis of gene expression data in R
-Version: 1.1.0
+Version: 1.0.2
 Author: Patryk Orzechowski, Artur Pańszczyk
 Maintainer: Patryk Orzechowski <patryk.orzechowski@gmail.com>
 Description: This package implements UbiBic algorithm in R. This biclustering algorithm for analysis of gene expression data was introduced by Zhenjia Wang et al. in 2016. It is currently considered the most promising biclustering method for identification of meaningful structures in complex and noisy data.
@@ -15,7 +15,7 @@ biocViews: Microarray, Clustering, GeneExpression, Sequencing, Coverage
 Encoding: UTF-8
 License: MIT + file LICENSE
 LazyData: true
-RoxygenNote: 6.0.1.9000
 NeedsCompilation: yes
 URL: http://github.com/athril/runibic
 BugReports: http://github.com/athril/runibic/issues
+RoxygenNote: 6.0.1
