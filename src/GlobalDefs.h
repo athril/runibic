@@ -45,6 +45,7 @@ public:
   , RowNumber(0)
   , ColNumber(0)
   , UseLegacy(false){};
+  int Divided;
   int RowNumber;
   int ColNumber;
   bool IsDiscrete;
@@ -58,7 +59,6 @@ public:
   double Filter;
   int Shuffle;
   int ColWidth;
-  int Divided;
   bool UseLegacy;
   void InitOptions(int rowNum, int colNum){
     RowNumber = rowNum;

@@ -277,7 +277,7 @@ std::vector<int> getGenesFullLCS(std::vector<int> const &s1, std::vector<int> co
   /*find all the columns of all LCSs*/
   if(maxRecord.size() > 0) {
 
-    for (auto i=maxRecord.size()-1;i>=0;i--) {
+    for (int i=maxRecord.size()-1;i>=0;i--) {
       TrackBack(C,B, s1.size()+1,maxRecord[i]+1);      
       break;
     }
