@@ -31,8 +31,10 @@ SOFTWARE.
 
 class Params{
 public:
-  Params()
-  : IsDiscrete(false)
+  Params()  
+  : RowNumber(0)
+  , ColNumber(0)
+  , IsDiscrete(false)
   , SchBlock(200)
   , Tolerance(0.85)
   , Quantile(0)
@@ -42,8 +44,6 @@ public:
   , Filter(1)
   , Shuffle(0)
   , Divided(0)
-  , RowNumber(0)
-  , ColNumber(0)
   , UseLegacy(false){};
   int Divided;
   int RowNumber;

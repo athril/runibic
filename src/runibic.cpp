@@ -179,7 +179,6 @@ Rcpp::IntegerMatrix unisort(Rcpp::IntegerMatrix x) {
   int max=omp_get_max_threads();
   omp_set_num_threads(max);
 
-
   vector< pair<int,int> > a;
   #pragma omp parallel for private(a)
   for (auto  j=0; j<nr; j++) {
@@ -409,7 +408,7 @@ Rcpp::List calculateLCS(Rcpp::IntegerMatrix discreteInput, bool useFibHeap=true)
 // [[Rcpp::export]]
 Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discreteInputValues, Rcpp::IntegerVector scores, 
   Rcpp::IntegerVector geneOne, Rcpp::IntegerVector geneTwo, int rowNumber, int colNumber) {
-
+ 
   //Initialize algorithm parameters
   gParameters.InitOptions(discreteInput.nrow(), discreteInput.ncol());
 
@@ -444,7 +443,6 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
   // matrix of found lcs
   vector<vector<int>> lcsTags(rowNumber);
-
   //Main loop
   for(auto ind = 0; ind < scores.size(); ind++) {
 
@@ -458,15 +456,14 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     else {
       flag = check_seed(scores(ind),geneOne(ind), geneTwo(ind), arrBlocks, arrBlocks.size(), rowNumber);
     }
-    if (!flag)    {
+    if (!flag)  {
       continue;
     }
-      
+
     // Init Current block
     currBlock = new BicBlock();
     currBlock->score = min(2, (int)scores(ind));
     currBlock->pvalue = 1;
-
     // vectors with current genes and scores
     vector<int> vecGenes, vecScores;
 
@@ -495,7 +492,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     int components = 2;
 
     block_init(scores(ind), geneOne(ind), geneTwo(ind), currBlock, vecGenes, vecScores, candidates, candThreshold, &components, pvalues, &gParameters, lcsTags, &discreteInputData);
-
+    
     // check new components
     std::size_t  k=0;
     for(k = 0; k < components; k++) {
@@ -510,7 +507,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
     if(components > vecGenes.size())
       components = vecGenes.size();
     vecGenes.resize(components);
-
+    
     // reinitialize candidates vector for further searching
     fill(candidates.begin(), candidates.end(), true);
     for (auto ki=0; ki < vecGenes.size() ; ki++) {
@@ -554,7 +551,10 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
 
     bool colChose = true;
     vector<int> m_ct(rowNumber);
-    
+    int countThreshold = floor(colcand.size() * gParameters.Tolerance);
+    if(gParameters.UseLegacy)
+      countThreshold += -1;
+ 
     // count number of occurances of candidates in results of lcs
     for(auto ki=0;ki < rowNumber;ki++) {
       colChose=true;
@@ -563,7 +563,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       if(candidates[ki])
         m_ct[ki]= count_if(lcsTags[ki].begin(), lcsTags[ki].end(), [&](int k) { return colcand.find(k) != colcand.end();});
       //check if this candidate can be added
-      if (candidates[ki]&& (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
+      if (candidates[ki]&& (m_ct[ki] >= countThreshold)) {
         int temp;
         for(auto it=colcand.begin(); it != colcand.end();it++){
           //calculate column statistics of recent candidate
@@ -585,7 +585,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
               colsStat[*it]++;
           }
         }
-      }
+      }       
     }
     currBlock->block_rows_pre = components;
 
@@ -638,7 +638,7 @@ Rcpp::List cluster(Rcpp::IntegerMatrix discreteInput, Rcpp::IntegerMatrix discre
       if(!candidates[ki])
         continue;
       //check if this candidate can be added
-      if (candidates[ki] && (m_ct[ki] >= floor(colcand.size() * gParameters.Tolerance)-1)) {
+      if (candidates[ki] && (m_ct[ki] >=countThreshold)) {
         for(auto it=colcand.begin(); it != colcand.end();it++){
           //calcualte columns statistics of candidate
           int tmpcount = colsStat[*it];
