@@ -1,3 +1,6 @@
+Version 1.2.3
+Improvement of results for sets with a small number of columns.
+
 Version 1.2.2
 Fixing build warning/errors on Windows/OSX.
 
