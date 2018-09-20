@@ -26,16 +26,16 @@ citEntry(entry = "Article",
                    as.person("Artur Pańszczyk"),
                    as.person("Xiuzhen Huang"),
                    as.person("Jason H. Moore")),
-  journal      = "bioRxiv",
-  year         = "2017",
-  pages        = "210682",
-  doi          = "https://doi.org/10.1101/210682",
+  journal      = "Bioinformatics",
+  year         = "2018",
+  pages        = "bty512",
+  doi          = "https://doi.org/10.1093/bioinformatics/bty512",
 
   textVersion  =
   paste("Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore;",
         "runibic: a Bioconductor package for parallel row-based biclustering of gene expression data",
-        "bioRxiv, 2017; 210682",
-        "doi: https://doi.org/10.1101/210682")
+        "Bioinformatics, 2018; bty512",
+        "doi: https://doi.org/10.1093/bioinformatics/bty512")
 )
 
 

@@ -67,14 +67,17 @@ bioRxiv, 2017; 210682, doi: [https://doi.org/10.1101/210682](https://doi.org/10.
 
 BibTex entry:
 ```
-@article{orzechowski2017runibic,
-  title={runibic: a Bioconductor package for parallel row-based biclustering of gene expression data},
-  author={Patryk Orzechowski, Artur Pańszczyk, Xiuzhen Huang, Jason H. Moore},
-  journal={bioRxiv},
-  pages={210682}
-  year={2017},
-  publisher={Cold Spring Harbor Laboratory},
-  doi={https://doi.org/10.1101/210682}
+@article{orzechowski2018runibic,
+  author = {Orzechowski, Patryk and Pańszczyk, Artur and Huang, Xiuzhen and Moore, Jason H},
+  title = {runibic: a Bioconductor package for parallel row-based biclustering of gene expression data},
+  journal = {Bioinformatics},
+  volume = {},
+  number = {},
+  pages = {bty512},
+  year = {2018},
+  doi = {10.1093/bioinformatics/bty512},
+  URL = {http://dx.doi.org/10.1093/bioinformatics/bty512},
+  eprint = {/oup/backfile/content_public/journal/bioinformatics/pap/10.1093_bioinformatics_bty512/4/bty512.pdf}
 }
 ```
 

@@ -11,6 +11,9 @@ Version 1.2.1
 Synchronizing the last change with Bioconductor 3.7
 
 Version 1.0.3
+Applying previous releases in the dev branch.
+
+Version 1.0.2
 Fix: modification of default parameters for small datasets in order to keep consistency between different sizes of the input.
 
 Version 1.0.1
