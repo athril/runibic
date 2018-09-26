@@ -140,7 +140,7 @@ runibic <- function(x = NULL, t = 0.95, q = 0, f = 1, nbic = 100, div = 0, useLe
     }
     set_runibic_params(t, q, f, nbic, div, useLegacy)
     x_d <- runiDiscretize(x)
-    return(runibic_d(x_d, t, q, f, nbic, div))
+    return(runibic_d(x_d, t, q, f, nbic, div, useLegacy))
 }
 
 
