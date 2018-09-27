@@ -1,4 +1,22 @@
-Version 1.3.2
+Version 1.3.3
+Fixing warnings.
+
+Version 1.2.5
+Removing warnings.
+
+Version 1.2.4
+Updating references.
+
+Version 1.2.3
+Improvement of results for sets with a small number of columns.
+
+Version 1.2.2
+Fixing build warning/errors on Windows/OSX.
+
+Version 1.2.1
+Synchronizing the last change with Bioconductor 3.7
+
+Version 1.0.3
 Applying previous releases in the dev branch.
 
 Version 1.0.2

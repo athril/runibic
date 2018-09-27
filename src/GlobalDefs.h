@@ -40,11 +40,14 @@ public:
   , Quantile(0)
   , IsCond(false)
   , IsArea(false)
+  , IsPValue(false)
   , RptBlock(100)
   , Filter(1)
   , Shuffle(0)
   , Divided(0)
+  , ColWidth(0)
   , UseLegacy(false){};
+
   int RowNumber;
   int ColNumber;
   bool IsDiscrete;
@@ -57,9 +60,11 @@ public:
   int RptBlock;
   double Filter;
   int Shuffle;
-  int ColWidth;
   int Divided;
+  int ColWidth;
   bool UseLegacy;
+
+
   void InitOptions(int rowNum, int colNum){
     RowNumber = rowNum;
     ColNumber = colNum;
