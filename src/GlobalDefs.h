@@ -44,8 +44,9 @@ public:
   , Filter(1)
   , Shuffle(0)
   , Divided(0)
+  , ColWidth(0)
   , UseLegacy(false){};
-  int Divided;
+
   int RowNumber;
   int ColNumber;
   bool IsDiscrete;
@@ -58,8 +59,11 @@ public:
   int RptBlock;
   double Filter;
   int Shuffle;
+  int Divided;
   int ColWidth;
   bool UseLegacy;
+
+
   void InitOptions(int rowNum, int colNum){
     RowNumber = rowNum;
     ColNumber = colNum;
